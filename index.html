@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precificação de impressão 3D</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Preço 3D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f2c46">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue-950:#0c2338;
+    --blue-900:#0f2c46;
+    --blue-800:#143752;
+    --blue-700:#1d4562;
+    --grid-line:#22496a;
+    --text-primary:#eaf2f8;
+    --text-muted:#8fb0c7;
+    --text-faint:#5c7f99;
+    --amber:#f2a93c;
+    --teal:#5fd6c0;
+    --danger:#e8735a;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background-color:var(--blue-950);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size:28px 28px;
+    background-attachment:fixed;
+    color:var(--text-primary);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding:32px 20px 80px;
+  }
+  .page{
+    max-width:1040px;
+    margin:0 auto;
+    position:relative;
+  }
+  .corner{
+    position:absolute;
+    width:22px;
+    height:22px;
+    border:2px solid var(--amber);
+    opacity:.9;
+  }
+  .corner.tl{top:-14px;left:-14px;border-right:none;border-bottom:none;}
+  .corner.tr{top:-14px;right:-14px;border-left:none;border-bottom:none;}
+  .corner.bl{bottom:-14px;left:-14px;border-right:none;border-top:none;}
+  .corner.br{bottom:-14px;right:-14px;border-left:none;border-top:none;}
+
+  header{
+    position:relative;
+    padding:28px 32px 26px;
+    margin-bottom:28px;
+    border:1px solid var(--blue-700);
+    background:linear-gradient(180deg, var(--blue-900), var(--blue-950));
+  }
+  h1{
+    margin:0 0 8px;
+    font-size:28px;
+    font-weight:600;
+    letter-spacing:.2px;
+  }
+  header p{
+    margin:0;
+    color:var(--text-muted);
+    font-size:14.5px;
+    max-width:560px;
+    line-height:1.5;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:1.15fr .85fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width:840px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    border:1px solid var(--blue-700);
+    background:rgba(15,44,70,.55);
+    backdrop-filter:blur(2px);
+  }
+  .panel-head{
+    padding:14px 20px;
+    border-bottom:1px solid var(--blue-700);
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--teal);
+    letter-spacing:.4px;
+  }
+  .panel-body{padding:20px;}
+
+  .group{margin-bottom:22px;}
+  .group:last-child{margin-bottom:0;}
+  .group-title{
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-bottom:10px;
+    padding-bottom:6px;
+    border-bottom:1px dashed var(--blue-700);
+  }
+
+  .field{
+    display:grid;
+    grid-template-columns:1fr 108px;
+    gap:12px;
+    align-items:center;
+    padding:8px 0;
+  }
+  .field label{
+    font-size:13.5px;
+    color:var(--text-primary);
+  }
+  .field .hint{
+    display:block;
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-top:2px;
+    line-height:1.4;
+  }
+  .field input{
+    width:100%;
+    background:var(--blue-800);
+    border:1px solid var(--blue-700);
+    color:var(--text-primary);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    text-align:right;
+    padding:7px 9px;
+    border-radius:var(--radius);
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--amber);
+  }
+  .unit{
+    font-size:11px;
+    color:var(--text-faint);
+    margin-left:6px;
+  }
+
+  /* result panel */
+  .result-panel{
+    position:sticky;
+    top:24px;
+  }
+  .result-headline{
+    padding:24px 20px 18px;
+    text-align:left;
+    border-bottom:1px solid var(--blue-700);
+  }
+  .result-headline .label{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-bottom:6px;
+  }
+  .result-headline .value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:40px;
+    font-weight:600;
+    color:var(--amber);
+    line-height:1;
+  }
+  .result-headline .value span{
+    font-size:20px;
+    color:var(--text-muted);
+    margin-right:2px;
+  }
+
+  table.breakdown{
+    width:100%;
+    border-collapse:collapse;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+  }
+  table.breakdown td{
+    padding:9px 20px;
+    border-bottom:1px dashed var(--blue-700);
+  }
+  table.breakdown tr:last-child td{border-bottom:none;}
+  table.breakdown td:first-child{
+    color:var(--text-muted);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13px;
+  }
+  table.breakdown td:last-child{
+    text-align:right;
+    color:var(--text-primary);
+  }
+  table.breakdown tr.subtotal td{
+    color:var(--teal);
+    font-weight:600;
+    border-top:1px solid var(--blue-700);
+    border-bottom:none;
+  }
+  table.breakdown tr.subtotal td:first-child{color:var(--teal);}
+  table.breakdown tr.profit td{
+    color:var(--amber);
+    font-weight:600;
+    border-bottom:none;
+  }
+  table.breakdown tr.profit td:first-child{color:var(--amber);}
+
+  .margin-note{
+    padding:16px 20px 20px;
+    font-size:12px;
+    color:var(--text-faint);
+    line-height:1.6;
+    border-top:1px solid var(--blue-700);
+  }
+  .margin-note b{color:var(--text-muted);font-weight:600;}
+
+  footer{
+    max-width:1040px;
+    margin:24px auto 0;
+    font-size:11.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <header>
+    <h1>Precificação de impressão 3D</h1>
+    <p>Preencha os dados da peça e da sua operação. O preço sugerido é recalculado a cada alteração, somando material, energia, depreciação da máquina, mão de obra e sua margem.</p>
+  </header>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-head">ESPECIFICAÇÕES DA PEÇA E DA OPERAÇÃO</div>
+      <div class="panel-body">
+
+        <div class="group">
+          <div class="group-title">Material</div>
+          <div class="field">
+            <label>Peso da peça</label>
+            <div><input type="number" id="peso" value="35" min="0" step="0.1"><span class="unit">g</span></div>
+          </div>
+          <div class="field">
+            <label>Preço do filamento</label>
+            <div><input type="number" id="precoFilamento" value="90" min="0" step="1"><span class="unit">R$/kg</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Tempo e energia</div>
+          <div class="field">
+            <label>Tempo de impressão</label>
+            <div><input type="number" id="tempo" value="4" min="0" step="0.1"><span class="unit">h</span></div>
+          </div>
+          <div class="field">
+            <label>Potência média da impressora</label>
+            <div><input type="number" id="potencia" value="150" min="0" step="10"><span class="unit">W</span></div>
+          </div>
+          <div class="field">
+            <label>Tarifa de energia</label>
+            <div><input type="number" id="tarifa" value="0.75" min="0" step="0.01"><span class="unit">R$/kWh</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Depreciação da máquina</div>
+          <div class="field">
+            <label>Valor pago na impressora
+              <span class="hint">Some acessórios relevantes (bico extra, mesa, etc.) se quiser diluir esse custo também.</span>
+            </label>
+            <div><input type="number" id="valorMaquina" value="1800" min="0" step="10"><span class="unit">R$</span></div>
+          </div>
+          <div class="field">
+            <label>Vida útil estimada
+              <span class="hint">Horas de impressão até considerar a máquina amortizada. 1500–3000h é uma faixa comum para uma FDM de entrada.</span>
+            </label>
+            <div><input type="number" id="vidaUtil" value="2000" min="1" step="50"><span class="unit">h</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Mão de obra</div>
+          <div class="field">
+            <label>Horas de trabalho manual
+              <span class="hint">Fatiamento, nivelamento, remoção de suportes, acabamento e embalagem — não o tempo em que a impressora trabalha sozinha.</span>
+            </label>
+            <div><input type="number" id="horasTrabalho" value="0.5" min="0" step="0.1"><span class="unit">h</span></div>
+          </div>
+          <div class="field">
+            <label>Valor da sua hora</label>
+            <div><input type="number" id="valorHora" value="25" min="0" step="1"><span class="unit">R$/h</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Outros custos e margem</div>
+          <div class="field">
+            <label>Custos fixos por peça
+              <span class="hint">Embalagem, etiqueta, cola, lixa, tinta — some tudo que não entra nos itens acima.</span>
+            </label>
+            <div><input type="number" id="custosFixos" value="3" min="0" step="0.5"><span class="unit">R$</span></div>
+          </div>
+          <div class="field">
+            <label>Margem de erro / falhas
+              <span class="hint">Cobre peças que falham no meio da impressão e precisam ser refeitas. Comece em 10–15% até ter seu próprio histórico.</span>
+            </label>
+            <div><input type="number" id="taxaFalha" value="10" min="0" step="1"><span class="unit">%</span></div>
+          </div>
+          <div class="field">
+            <label>Margem de lucro desejada</label>
+            <div><input type="number" id="margem" value="40" min="0" max="95" step="1"><span class="unit">%</span></div>
+          </div>
+          <div class="field">
+            <label>Taxa de marketplace
+              <span class="hint">Se vender por plataforma que cobra comissão (Mercado Livre, Shopee etc.), informe o percentual aqui.</span>
+            </label>
+            <div><input type="number" id="taxaPlataforma" value="0" min="0" max="50" step="1"><span class="unit">%</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="panel result-panel">
+      <div class="result-headline">
+        <div class="label">Preço de venda sugerido</div>
+        <div class="value"><span>R$</span><span id="precoFinal">0,00</span></div>
+      </div>
+      <table class="breakdown">
+        <tr><td>Filamento</td><td id="rFilamento">R$ 0,00</td></tr>
+        <tr><td>Energia</td><td id="rEnergia">R$ 0,00</td></tr>
+        <tr><td>Depreciação da máquina</td><td id="rDeprec">R$ 0,00</td></tr>
+        <tr><td>Mão de obra</td><td id="rMaoObra">R$ 0,00</td></tr>
+        <tr><td>Custos fixos</td><td id="rFixos">R$ 0,00</td></tr>
+        <tr class="subtotal"><td>Custo com margem de falha</td><td id="rCustoTotal">R$ 0,00</td></tr>
+        <tr><td>Taxa de marketplace</td><td id="rTaxaPlataforma">R$ 0,00</td></tr>
+        <tr class="profit"><td>Lucro líquido</td><td id="rLucro">R$ 0,00</td></tr>
+      </table>
+      <div class="margin-note">
+        O custo com margem de falha é dividido por <b>(1 − margem de lucro − taxa de marketplace)</b> para chegar ao preço final — assim a margem incide sobre o preço de venda, não só sobre o custo.
+      </div>
+    </div>
+  </div>
+
+  <footer>Ferramenta de apoio à decisão — ajuste os valores conforme sua realidade de energia, filamento e máquina.</footer>
+</div>
+
+<script>
+function fmt(n){
+  return n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function calcular(){
+  const peso = parseFloat(document.getElementById('peso').value) || 0;
+  const precoFilamento = parseFloat(document.getElementById('precoFilamento').value) || 0;
+  const tempo = parseFloat(document.getElementById('tempo').value) || 0;
+  const potencia = parseFloat(document.getElementById('potencia').value) || 0;
+  const tarifa = parseFloat(document.getElementById('tarifa').value) || 0;
+  const valorMaquina = parseFloat(document.getElementById('valorMaquina').value) || 0;
+  const vidaUtil = parseFloat(document.getElementById('vidaUtil').value) || 1;
+  const horasTrabalho = parseFloat(document.getElementById('horasTrabalho').value) || 0;
+  const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
+  const custosFixos = parseFloat(document.getElementById('custosFixos').value) || 0;
+  const taxaFalha = parseFloat(document.getElementById('taxaFalha').value) || 0;
+  const margem = parseFloat(document.getElementById('margem').value) || 0;
+  const taxaPlataforma = parseFloat(document.getElementById('taxaPlataforma').value) || 0;
+
+  const custoFilamento = (peso/1000) * precoFilamento;
+  const custoEnergia = (potencia/1000) * tempo * tarifa;
+  const custoDeprec = (valorMaquina/vidaUtil) * tempo;
+  const custoMaoObra = horasTrabalho * valorHora;
+
+  const subtotal = custoFilamento + custoEnergia + custoDeprec + custoMaoObra + custosFixos;
+  const custoComFalha = subtotal * (1 + taxaFalha/100);
+
+  let divisor = 1 - ((margem + taxaPlataforma)/100);
+  if (divisor <= 0.01) divisor = 0.01; // evita divisão por zero/negativa
+  const precoFinal = custoComFalha / divisor;
+  const valorTaxaPlataforma = precoFinal * (taxaPlataforma/100);
+  const lucroLiquido = precoFinal - custoComFalha - valorTaxaPlataforma;
+
+  document.getElementById('rFilamento').textContent = 'R$ ' + fmt(custoFilamento);
+  document.getElementById('rEnergia').textContent = 'R$ ' + fmt(custoEnergia);
+  document.getElementById('rDeprec').textContent = 'R$ ' + fmt(custoDeprec);
+  document.getElementById('rMaoObra').textContent = 'R$ ' + fmt(custoMaoObra);
+  document.getElementById('rFixos').textContent = 'R$ ' + fmt(custosFixos);
+  document.getElementById('rCustoTotal').textContent = 'R$ ' + fmt(custoComFalha);
+  document.getElementById('rTaxaPlataforma').textContent = 'R$ ' + fmt(valorTaxaPlataforma);
+  document.getElementById('rLucro').textContent = 'R$ ' + fmt(lucroLiquido);
+  document.getElementById('precoFinal').textContent = fmt(precoFinal);
+}
+
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', calcular));
+calcular();
+</script>
+</body>
+</html>
