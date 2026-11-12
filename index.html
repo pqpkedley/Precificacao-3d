@@ -180,6 +180,7 @@
     font-weight:400;
     font-size:14.5px;
   }
+  .row input.hm{ width:44px; }
   .row input:focus{ outline:none; }
   .row .unit{
     font-size:12px;
@@ -507,7 +508,7 @@
   <div class="card">
     <div class="row">
       <div class="rlabel">Tempo de impressão</div>
-      <div class="valuewrap"><input type="number" id="tempo" value="4" min="0" step="0.1"><span class="unit">h</span></div>
+      <div class="valuewrap"><input type="hidden" id="tempo" value="4"><input type="number" class="hm" id="tempoH" value="4" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">h</span><input type="number" class="hm" id="tempoM" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">min</span></div>
     </div>
     <div class="row">
       <div class="rlabel">Potência média</div>
@@ -541,7 +542,7 @@
       <div class="rlabel">Horas de trabalho manual
         <span class="hint">Fatiamento, acabamento, embalagem — não o tempo de impressão sozinho.</span>
       </div>
-      <div class="valuewrap"><input type="number" id="horasTrabalho" value="0.5" min="0" step="0.1"><span class="unit">h</span></div>
+      <div class="valuewrap"><input type="hidden" id="horasTrabalho" value="0.5"><input type="number" class="hm" id="horasTrabalhoH" value="0" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('horasTrabalho')"><span class="unit">h</span><input type="number" class="hm" id="horasTrabalhoM" value="30" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('horasTrabalho')"><span class="unit">min</span></div>
     </div>
     <div class="row">
       <div class="rlabel">Valor da sua hora</div>
@@ -850,6 +851,7 @@ function novaPeca(){
   document.getElementById('filamentoSelectIds').value = '';
   renderFilamentoChips();
   fecharHistoricoDropdown();
+  sincronizarTempos();
   calcular();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
@@ -883,6 +885,7 @@ function carregarPeca(id){
   }catch(e){ filamentosSelecionados = []; }
   renderFilamentoChips();
   fecharHistoricoDropdown();
+  sincronizarTempos();
   calcular();
   window.scrollTo({ top:0, behavior:'smooth' });
 }
@@ -1202,6 +1205,23 @@ function calcular(){
   document.getElementById('heroLucroValue').textContent = 'R$ ' + fmt(r.lucroLiquido);
 }
 
+// ---- Tempo em horas e minutos ----
+// Os campos escondidos #tempo e #horasTrabalho guardam o valor em horas decimais
+// (é o que o cálculo, o histórico e o backup usam). Os campos visíveis são só a entrada.
+function atualizarTempo(id){
+  const h = parseFloat(document.getElementById(id + 'H').value) || 0;
+  const m = parseFloat(document.getElementById(id + 'M').value) || 0;
+  document.getElementById(id).value = String(Math.max(0, h + m/60));
+}
+function sincronizarTempos(){
+  ['tempo','horasTrabalho'].forEach(id => {
+    const dec = parseFloat(document.getElementById(id).value) || 0;
+    const total = Math.round(dec * 60);
+    document.getElementById(id + 'H').value = Math.floor(total / 60);
+    document.getElementById(id + 'M').value = total % 60;
+  });
+}
+
 document.querySelectorAll('input').forEach(el => el.addEventListener('input', calcular));
 renderPalette();
 renderFilamentos();
@@ -1209,6 +1229,7 @@ renderFilamentoChips();
 renderHistorico();
 renderOrcamentoItens();
 carregarVendedorSalvo();
+sincronizarTempos();
 calcular();
 </script>
 </body>
