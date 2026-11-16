@@ -102,6 +102,31 @@
   .hero-value .cents{ font-size:26px; color:var(--text-muted); font-weight:600; }
   .hero-value .cur{ font-size:22px; color:var(--text-muted); font-weight:600; margin-right:4px; }
 
+  .hero-original{
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:6px;
+    position:relative;
+    display:none;
+  }
+  .btn-round{
+    position:relative;
+    width:100%;
+    margin-top:18px;
+    border:none;
+    border-radius:12px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    padding:13px 0;
+    cursor:pointer;
+    background:rgba(255,255,255,.09);
+    color:var(--text-primary);
+  }
+  .btn-round.ativo{
+    background:var(--molten);
+    color:#17181b;
+  }
   .hero-sub{
     display:flex;
     align-items:baseline;
@@ -594,12 +619,14 @@
 
   <div class="hero">
     <div class="glow"></div>
-    <div class="hero-label">Preço de venda sugerido</div>
+    <div class="hero-label" id="heroLabel">Preço de venda sugerido</div>
     <div class="hero-value" id="heroValue"><span class="cur">R$</span>0,00</div>
     <div class="hero-sub">
       <span class="hero-sub-label">Lucro líquido</span>
       <span class="hero-sub-value" id="heroLucroValue">R$ 0,00</span>
     </div>
+    <div class="hero-original" id="heroOriginal"></div>
+    <button class="btn-round" id="btnArredondar" onclick="alternarArredondamento()">Arredondar preço</button>
   </div>
 
   <div class="section-label">Orçamento para o cliente</div>
@@ -1153,6 +1180,25 @@ function fmt(n){
   return n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
+// ---- Arredondar preço (preço psicológico) ----
+// Sempre para cima, terminando em ,90. Nunca fica abaixo do preço calculado,
+// então a margem de lucro nunca diminui. Para mudar a terminação, altere o 90.
+// Ex.: 21,14 -> 21,90 | 21,90 -> 21,90 | 21,91 -> 22,90
+const TERMINACAO_CENTAVOS = 90;
+let arredondarAtivo = false;
+function arredondarPreco(preco){
+  if(!(preco > 0)) return preco;
+  const cents = Math.ceil(preco * 100 - 1e-6);
+  const reais = Math.floor(cents / 100);
+  const resto = cents % 100;
+  const alvo = resto <= TERMINACAO_CENTAVOS ? reais : reais + 1;
+  return alvo + TERMINACAO_CENTAVOS / 100;
+}
+function alternarArredondamento(){
+  arredondarAtivo = !arredondarAtivo;
+  calcular();
+}
+
 function calcularValores(){
   const peso = parseFloat(document.getElementById('peso').value) || 0;
   const precoFilamento = parseFloat(document.getElementById('precoFilamento').value) || 0;
@@ -1178,11 +1224,12 @@ function calcularValores(){
 
   let divisor = 1 - ((margem + taxaPlataforma)/100);
   if (divisor <= 0.01) divisor = 0.01;
-  const precoFinal = custoComFalha / divisor;
+  const precoCalculado = custoComFalha / divisor;
+  const precoFinal = arredondarAtivo ? arredondarPreco(precoCalculado) : precoCalculado;
   const valorTaxaPlataforma = precoFinal * (taxaPlataforma/100);
   const lucroLiquido = precoFinal - custoComFalha - valorTaxaPlataforma;
 
-  return { custoFilamento, custoEnergia, custoDeprec, custoMaoObra, custosFixos, custoComFalha, valorTaxaPlataforma, precoFinal, lucroLiquido };
+  return { custoFilamento, custoEnergia, custoDeprec, custoMaoObra, custosFixos, custoComFalha, valorTaxaPlataforma, precoCalculado, precoFinal, lucroLiquido };
 }
 
 function calcular(){
@@ -1203,6 +1250,14 @@ function calcular(){
   void heroEl.offsetWidth;
   heroEl.classList.add('pulse');
   document.getElementById('heroLucroValue').textContent = 'R$ ' + fmt(r.lucroLiquido);
+
+  const btn = document.getElementById('btnArredondar');
+  const orig = document.getElementById('heroOriginal');
+  document.getElementById('heroLabel').textContent = arredondarAtivo ? 'Preço de venda arredondado' : 'Preço de venda sugerido';
+  btn.textContent = arredondarAtivo ? 'Voltar ao preço calculado' : 'Arredondar preço';
+  btn.classList.toggle('ativo', !arredondarAtivo);
+  orig.style.display = arredondarAtivo ? 'block' : 'none';
+  orig.textContent = 'Preço calculado: R$ ' + fmt(r.precoCalculado);
 }
 
 // ---- Tempo em horas e minutos ----
