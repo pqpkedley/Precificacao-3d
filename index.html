@@ -109,6 +109,87 @@
     position:relative;
     display:none;
   }
+  .hero-tiers{
+    position:relative;
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.08);
+    display:none;
+  }
+  .hero-tiers-titulo{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-bottom:6px;
+  }
+  .hero-tier{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+    padding:3px 0;
+    font-size:13.5px;
+    color:var(--text-muted);
+  }
+  .hero-qty{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:2px 0 10px;
+    font-size:14px;
+    color:var(--text-primary);
+  }
+  .hero-qty input{
+    width:72px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;
+    color:var(--text-primary);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:18px;
+    font-weight:700;
+    text-align:center;
+    padding:7px 0;
+  }
+  .hero-qty input:focus{ outline:none; border-color:var(--molten); }
+  .hero-sim{
+    padding:10px 12px;
+    margin-bottom:10px;
+    border-radius:12px;
+    background:rgba(255,255,255,.05);
+  }
+  .hero-sim .hero-tier{ padding:3px 0; }
+  .hero-sim .hero-tier .teal{ color:var(--teal); }
+  .hero-sim .hero-nota{
+    font-size:12px;
+    color:var(--text-muted);
+    margin-top:4px;
+  }
+  .hero-tier.ativo{
+    box-shadow:inset 2px 0 0 var(--molten);
+    padding-left:8px;
+    color:var(--text-primary);
+  }
+  .hero-detalhes{ margin-top:12px; position:relative; }
+  .hero-detalhes summary{
+    font-size:13px;
+    color:var(--text-muted);
+    cursor:pointer;
+    padding:4px 0;
+  }
+  .hero-detalhes[open] summary{ margin-bottom:6px; }
+  .hero-tier small{
+    display:block;
+    font-size:12px;
+    color:var(--teal);
+    margin-top:1px;
+  }
+  .hero-tier b{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--text-primary);
+  }
   .btn-round{
     position:relative;
     width:100%;
@@ -207,6 +288,18 @@
   }
   .row input.hm{ width:44px; }
   .row input:focus{ outline:none; }
+  .btn-toggle{
+    border:none;
+    border-radius:999px;
+    padding:7px 14px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    background:rgba(255,255,255,.09);
+    color:var(--text-muted);
+  }
+  .btn-toggle.on{ background:var(--teal); color:#17181b; }
   .row .unit{
     font-size:12px;
     color:var(--text-faint);
@@ -429,7 +522,7 @@
   .histrow .histname{ font-size:14.5px; color:var(--text-primary); }
   .histrow .histdate{ font-size:11.5px; color:var(--text-faint); }
   .histrow .histright{ display:flex; align-items:center; gap:12px; }
-  .histrow .histprice{ font-family:'Space Grotesk',sans-serif; font-weight:600; color:var(--molten-soft); font-size:14px; }
+  .histrow .histprice{ font-family:'Space Grotesk',sans-serif; font-weight:600; color:var(--molten-soft); font-size:14px; white-space:nowrap; }
   .histrow .histremove{
     background:none; border:none; color:var(--text-faint);
     font-size:18px; line-height:1; cursor:pointer; padding:4px;
@@ -626,7 +719,47 @@
       <span class="hero-sub-value" id="heroLucroValue">R$ 0,00</span>
     </div>
     <div class="hero-original" id="heroOriginal"></div>
+    <div class="hero-tiers" id="heroTiers">
+      <div class="hero-tiers-titulo">Desconto por quantidade</div>
+      <div class="hero-qty">
+        <label for="heroQtd">Quantas peças o cliente quer?</label>
+        <input type="number" id="heroQtd" value="1" min="1" step="1" inputmode="numeric" oninput="mudouQtdHero()">
+      </div>
+      <div class="hero-sim" id="heroSim"></div>
+      <details class="hero-detalhes">
+        <summary>Ver o preço de cada quantidade</summary>
+        <div id="heroTierList"></div>
+      </details>
+    </div>
     <button class="btn-round" id="btnArredondar" onclick="alternarArredondamento()">Arredondar preço</button>
+  </div>
+
+  <div class="section-label">Desconto por quantidade</div>
+  <div class="card">
+    <div class="row">
+      <div class="rlabel">Aplicar nos orçamentos
+        <span class="hint">O desconto vale para o pedido inteiro, pelo total de peças. Use em venda direta (Instagram, WhatsApp), não em marketplace.</span>
+      </div>
+      <div class="valuewrap"><button class="btn-toggle on" id="descToggle" onclick="alternarDesconto()">Ligado</button></div>
+    </div>
+    <div class="row">
+      <div class="rlabel">Desconto por peça a mais
+        <span class="hint" id="descHintPasso"></span>
+      </div>
+      <div class="valuewrap"><input type="number" id="descPasso" min="0" max="50" step="0.5" inputmode="decimal" oninput="mudouDesconto()"><span class="unit">%</span></div>
+    </div>
+    <div class="row">
+      <div class="rlabel">Desconto máximo
+        <span class="hint" id="descHintMax"></span>
+      </div>
+      <div class="valuewrap"><input type="number" id="descMax" min="0" max="90" step="0.5" inputmode="decimal" oninput="mudouDesconto()"><span class="unit">%</span></div>
+    </div>
+    <div class="row">
+      <div class="rlabel">Margem mínima
+        <span class="hint">Avisa quando o desconto deixa a margem abaixo deste valor.</span>
+      </div>
+      <div class="valuewrap"><input type="number" id="descPiso" min="0" max="99" step="1" inputmode="decimal" oninput="mudouDesconto()"><span class="unit">%</span></div>
+    </div>
   </div>
 
   <div class="section-label">Orçamento para o cliente</div>
@@ -657,6 +790,14 @@
       <div class="rlabel add-label">+ Adicionar peça atual ao orçamento</div>
     </div>
     <div id="orcamentoItensList"></div>
+    <div class="row" id="orcamentoSubtotalRow" style="display:none;">
+      <div class="rlabel">Subtotal</div>
+      <div class="valuewrap"><span class="filprice" id="orcamentoSubtotalValor">R$ 0,00</span></div>
+    </div>
+    <div class="row" id="orcamentoDescontoRow" style="display:none;">
+      <div class="rlabel" id="orcamentoDescontoLabel">Desconto por quantidade</div>
+      <div class="valuewrap"><span class="filprice" id="orcamentoDescontoValor" style="color:var(--teal);">R$ 0,00</span></div>
+    </div>
     <div class="row" id="orcamentoTotalRow" style="display:none;">
       <div class="rlabel" style="font-weight:600;">Total do orçamento</div>
       <div class="valuewrap"><span class="filprice" id="orcamentoTotalValor">R$ 0,00</span></div>
@@ -666,6 +807,9 @@
         <span class="hint">Só pra sua referência — essa linha não entra no PDF nem na mensagem enviada.</span>
       </div>
       <div class="valuewrap"><span class="filprice" id="orcamentoLucroValor" style="color:var(--teal);">R$ 0,00</span></div>
+    </div>
+    <div class="row" id="orcamentoNotaRow" style="display:none;">
+      <div class="rlabel"><span class="hint" id="orcamentoNotaTexto" style="margin-top:0;"></span></div>
     </div>
   </div>
 
@@ -960,7 +1104,8 @@ function adicionarItemOrcamento(){
   const qtd = parseInt(document.getElementById('qtdItemAtual').value) || 1;
   const nome = document.getElementById('nomePecaAtual').value.trim() || 'Peça personalizada';
   const arr = loadOrcamentoItens();
-  arr.push({ id: Date.now().toString(), nome, qtd, precoUnitario: r.precoFinal, lucroUnitario: r.lucroLiquido });
+  arr.push({ id: Date.now().toString(), nome, qtd, precoUnitario: r.precoFinal, lucroUnitario: r.lucroLiquido,
+    custoUnitario: r.custoComFalha, taxaPct: parseFloat(document.getElementById('taxaPlataforma').value) || 0 });
   saveOrcamentoItens(arr);
   renderOrcamentoItens();
 }
@@ -971,12 +1116,13 @@ function removerItemOrcamento(id){
 }
 function renderOrcamentoItens(){
   const arr = loadOrcamentoItens();
+  const o = calcularOrcamento(arr);
   const list = document.getElementById('orcamentoItensList');
   list.innerHTML = arr.map(i => `
     <div class="histrow" style="cursor:default;">
       <div class="histinfo">
         <span class="histname">${i.nome} × ${i.qtd}</span>
-        <span class="histdate">R$ ${fmt(i.precoUnitario)} cada · lucro R$ ${fmt((i.lucroUnitario||0) * i.qtd)}</span>
+        <span class="histdate">${o.pct > 0 ? 'R$ ' + fmt(i.precoUnitario) + ' → R$ ' + fmt(precoComDesconto(i, o.pct)) : 'R$ ' + fmt(i.precoUnitario)} cada · lucro R$ ${fmt(lucroItem(i, o.pct) * i.qtd)}</span>
       </div>
       <div class="histright">
         <span class="histprice">R$ ${fmt(i.precoUnitario * i.qtd)}</span>
@@ -984,19 +1130,36 @@ function renderOrcamentoItens(){
       </div>
     </div>
   `).join('');
-  const totalRow = document.getElementById('orcamentoTotalRow');
-  const lucroRow = document.getElementById('orcamentoLucroRow');
-  if(arr.length){
-    const total = arr.reduce((s,i) => s + i.precoUnitario * i.qtd, 0);
-    const totalLucro = arr.reduce((s,i) => s + (i.lucroUnitario||0) * i.qtd, 0);
-    document.getElementById('orcamentoTotalValor').textContent = 'R$ ' + fmt(total);
-    document.getElementById('orcamentoLucroValor').textContent = 'R$ ' + fmt(totalLucro);
-    totalRow.style.display = 'flex';
-    lucroRow.style.display = 'flex';
-  } else {
-    totalRow.style.display = 'none';
-    lucroRow.style.display = 'none';
+  const show = (id, on) => { document.getElementById(id).style.display = on ? 'flex' : 'none'; };
+  const temItens = arr.length > 0;
+  const temDesconto = temItens && o.desconto > 0.004;
+  show('orcamentoTotalRow', temItens);
+  show('orcamentoLucroRow', temItens);
+  show('orcamentoSubtotalRow', temDesconto);
+  show('orcamentoDescontoRow', temDesconto);
+  if(temItens){
+    document.getElementById('orcamentoSubtotalValor').textContent = 'R$ ' + fmt(o.subtotal);
+    document.getElementById('orcamentoDescontoLabel').textContent = 'Desconto por quantidade (' + pctTexto(o.pct) + '%)';
+    document.getElementById('orcamentoDescontoValor').textContent = '− R$ ' + fmt(o.desconto);
+    document.getElementById('orcamentoTotalValor').textContent = 'R$ ' + fmt(o.total);
+    document.getElementById('orcamentoLucroValor').textContent = 'R$ ' + fmt(o.lucro);
   }
+
+  // nota só para o vendedor: aviso de margem ou dica do próximo degrau
+  const nota = document.getElementById('orcamentoNotaTexto');
+  let msg = '', cor = '';
+  if(temItens){
+    const margemPct = o.margem * 100;
+    if(o.pct > 0 && margemPct < descontoCfg.piso){
+      msg = 'Atenção: com este desconto a margem do pedido fica em ' + Math.round(margemPct) + '%, abaixo do mínimo de ' + pctTexto(descontoCfg.piso) + '%.';
+      cor = 'var(--danger)';
+    } else if(o.proximo){
+      msg = 'Com mais ' + o.proximo.faltam + (o.proximo.faltam === 1 ? ' peça' : ' peças') + ', o cliente ganha ' + pctTexto(o.proximo.pct) + '% de desconto.';
+    }
+  }
+  nota.textContent = msg;
+  nota.style.color = cor;
+  show('orcamentoNotaRow', !!msg);
 }
 
 function dadosOrcamento(){
@@ -1012,8 +1175,9 @@ function dadosOrcamento(){
     const nomePeca = document.getElementById('nomePecaAtual').value.trim() || 'Peça personalizada';
     itens = [{ nome: nomePeca, qtd, precoUnitario: r.precoFinal }];
   }
-  const total = itens.reduce((s,i) => s + i.precoUnitario * i.qtd, 0);
-  return { itens, validade, nomeCliente, nomeVendedor, total, data: new Date().toLocaleDateString('pt-BR') };
+  const o = calcularOrcamento(itens);
+  return { itens, validade, nomeCliente, nomeVendedor, total: o.total, subtotal: o.subtotal, desconto: o.desconto, pct: o.pct,
+           data: new Date().toLocaleDateString('pt-BR') };
 }
 
 function gerarPDF(){
@@ -1083,7 +1247,24 @@ function gerarPDF(){
 
   doc.setDrawColor(225,225,225);
   doc.line(margem, y, direita, y);
-  y += 14;
+  if(d.desconto > 0.004){
+    doc.setFontSize(10.5);
+    y += 8;
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(110,110,110);
+    doc.text('Subtotal', 155, y, { align:'right' });
+    doc.setTextColor(40,40,40);
+    doc.text('R$ ' + fmt(d.subtotal), direita - 3, y, { align:'right' });
+    y += 7;
+    doc.setTextColor(110,110,110);
+    doc.text('Desconto por quantidade (' + pctTexto(d.pct) + '%)', 155, y, { align:'right' });
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(30,150,100);
+    doc.text('- R$ ' + fmt(d.desconto), direita - 3, y, { align:'right' });
+    y += 10;
+  } else {
+    y += 14;
+  }
 
   // Caixa de total
   const boxH = 20;
@@ -1122,7 +1303,10 @@ async function compartilharWhatsApp(){
   const file = new File([blob], 'orcamento.pdf', { type:'application/pdf' });
 
   const linhas = d.itens.map(i => `${i.nome} × ${i.qtd} — R$ ${fmt(i.precoUnitario * i.qtd)}`).join('\n');
-  const texto = `Orçamento\n${linhas}\n\nTotal: R$ ${fmt(d.total)}\nVálido por ${d.validade} dias`;
+  const linhaDesconto = d.desconto > 0.004
+    ? `Subtotal: R$ ${fmt(d.subtotal)}\nDesconto por quantidade (${pctTexto(d.pct)}%): - R$ ${fmt(d.desconto)}\n`
+    : '';
+  const texto = `Orçamento\n${linhas}\n\n${linhaDesconto}Total: R$ ${fmt(d.total)}\nVálido por ${d.validade} dias`;
 
   if(navigator.canShare && navigator.canShare({ files:[file] })){
     try{
@@ -1133,13 +1317,176 @@ async function compartilharWhatsApp(){
   window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
 }
 
+// ---- Desconto por quantidade ----
+// Progressivo: cada peça a mais aumenta o desconto em "passo" %, até o "máximo".
+// Ex.: passo 5% e máximo 15% -> 1 peça: 0% | 2: 5% | 3: 10% | 4 ou mais: 15%.
+// O desconto vale para o pedido inteiro (soma das quantidades) e a configuração
+// fica salva neste navegador (e no backup).
+const DESCONTO_PADRAO = { ativo:true, piso:20, passo:5, maximo:15 };
+function descontoValido(c){
+  return !!c && isFinite(c.passo) && isFinite(c.maximo) && isFinite(c.piso);
+}
+function carregarDescontoCfg(){
+  try{
+    const c = JSON.parse(localStorage.getItem('descontoConfig3d'));
+    if(descontoValido(c)) return c;
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DESCONTO_PADRAO));
+}
+let descontoCfg = carregarDescontoCfg();
+function salvarDescontoCfg(){
+  try{ localStorage.setItem('descontoConfig3d', JSON.stringify(descontoCfg)); }catch(e){}
+}
+function pctTexto(n){ return String(Math.round(n * 100) / 100).replace('.', ','); }
+
+function preencherCamposDesconto(){
+  document.getElementById('descPasso').value = descontoCfg.passo;
+  document.getElementById('descMax').value = descontoCfg.maximo;
+  document.getElementById('descPiso').value = descontoCfg.piso;
+  const t = document.getElementById('descToggle');
+  t.textContent = descontoCfg.ativo ? 'Ligado' : 'Desligado';
+  t.classList.toggle('on', descontoCfg.ativo);
+}
+function mudouDesconto(){
+  const num = id => parseFloat(document.getElementById(id).value);
+  descontoCfg.passo = Math.min(50, Math.max(0, num('descPasso') || 0));
+  descontoCfg.maximo = Math.min(90, Math.max(0, num('descMax') || 0));
+  descontoCfg.piso = Math.min(99, Math.max(0, num('descPiso') || 0));
+  salvarDescontoCfg();
+  renderOrcamentoItens();
+  atualizarDescontoUI();
+}
+function mudouQtdHero(){
+  document.getElementById('qtdItemAtual').value = document.getElementById('heroQtd').value;
+  atualizarDescontoUI();
+}
+function sincronizarQtdOrcamento(){
+  document.getElementById('heroQtd').value = document.getElementById('qtdItemAtual').value;
+  atualizarDescontoUI();
+}
+function alternarDesconto(){
+  descontoCfg.ativo = !descontoCfg.ativo;
+  preencherCamposDesconto();
+  salvarDescontoCfg();
+  renderOrcamentoItens();
+  atualizarDescontoUI();
+}
+
+// Desconto progressivo, sem olhar se está ligado (usado também para listar as quantidades).
+function pctProgressivo(qtd){
+  const bruto = descontoCfg.passo * (qtd - 1);
+  return Math.max(0, Math.min(descontoCfg.maximo, Math.round(bruto * 100) / 100));
+}
+function pctDoDesconto(qtdTotal){
+  return descontoCfg.ativo ? pctProgressivo(qtdTotal) : 0;
+}
+// Quantidade de peças em que o desconto chega no máximo (null se não há desconto).
+function qtdDoTeto(){
+  return descontoCfg.passo > 0 && descontoCfg.maximo > 0
+    ? Math.ceil(descontoCfg.maximo / descontoCfg.passo - 1e-9) + 1 : null;
+}
+function proximoDegrau(qtdTotal, pctAtual){
+  const prox = pctDoDesconto(qtdTotal + 1);
+  return prox > pctAtual ? { faltam: 1, pct: prox } : null;
+}
+// Lucro de uma unidade do item já com o desconto. Itens antigos (sem custo salvo)
+// usam custo = preço - lucro, que é conservador quando há taxa de marketplace.
+function precoComDesconto(i, pct){
+  return pct > 0 ? Math.round(i.precoUnitario * (1 - pct/100) * 100) / 100 : i.precoUnitario;
+}
+function lucroItem(i, pct){
+  const fee = (i.taxaPct || 0) / 100;
+  const custo = i.custoUnitario !== undefined ? i.custoUnitario : (i.precoUnitario - (i.lucroUnitario || 0));
+  return precoComDesconto(i, pct) * (1 - fee) - custo;
+}
+function calcularOrcamento(itens){
+  const qtdTotal = itens.reduce((s, i) => s + i.qtd, 0);
+  const pct = pctDoDesconto(qtdTotal);
+  let subtotal = 0, total = 0, lucro = 0;
+  itens.forEach(i => {
+    subtotal += i.precoUnitario * i.qtd;
+    total += precoComDesconto(i, pct) * i.qtd;
+    lucro += lucroItem(i, pct) * i.qtd;
+  });
+  return { qtdTotal, pct, subtotal, total, desconto: Math.max(0, subtotal - total), lucro,
+           margem: total > 0 ? lucro / total : 0, proximo: proximoDegrau(qtdTotal, pct) };
+}
+
+// Cartão do preço (simulação pela quantidade) e dicas de margem na configuração.
+function atualizarDescontoUI(){
+  const r = calcularValores();
+  const taxa = (parseFloat(document.getElementById('taxaPlataforma').value) || 0) / 100;
+  const box = document.getElementById('heroTiers');
+  const teto = qtdDoTeto();
+  const ligado = descontoCfg.ativo && r.precoFinal > 0 && teto !== null;
+  if(ligado){
+    const qtd = Math.max(1, Math.floor(parseFloat(document.getElementById('heroQtd').value)) || 1);
+    const pct = pctDoDesconto(qtd);
+    const unit = pct > 0 ? Math.round(r.precoFinal * (1 - pct/100) * 100) / 100 : r.precoFinal;
+    const lucroUn = unit * (1 - taxa) - r.custoComFalha;
+    const total = unit * qtd, lucroTot = lucroUn * qtd;
+    const margemPct = total > 0 ? (lucroTot / total) * 100 : 0;
+    const prox = proximoDegrau(qtd, pct);
+    const plural = n => n + (n === 1 ? ' peça' : ' peças');
+    let sim = '<div class="hero-tier"><span>Preço por peça' + (pct > 0 ? ' · ' + pctTexto(pct) + '% off' : ' · sem desconto') +
+      '</span><b>R$ ' + fmt(unit) + '</b></div>' +
+      '<div class="hero-tier"><span>Total de ' + plural(qtd) + '</span><b>R$ ' + fmt(total) + '</b></div>' +
+      '<div class="hero-tier"><span>Lucro líquido total</span><b class="teal">R$ ' + fmt(lucroTot) + '</b></div>';
+    if(pct > 0 && margemPct < descontoCfg.piso){
+      sim += '<div class="hero-nota" style="color:var(--danger);">Atenção: a margem fica em ' + Math.round(margemPct) + '%, abaixo do mínimo de ' + pctTexto(descontoCfg.piso) + '%.</div>';
+    } else if(prox){
+      sim += '<div class="hero-nota">Com mais ' + plural(prox.faltam) + ', o desconto vai para ' + pctTexto(prox.pct) + '%.</div>';
+    }
+    document.getElementById('heroSim').innerHTML = sim;
+
+    // lista: uma linha por quantidade (2, 3, 4...) até o desconto chegar no máximo
+    const ate = Math.min(teto, 11);
+    const alvo = qtd >= 2 ? Math.min(qtd, teto) : 0;
+    let lista = '';
+    for(let q = 2; q <= ate; q++){
+      const pq = pctProgressivo(q);
+      const preco = Math.round(r.precoFinal * (1 - pq/100) * 100) / 100;
+      const lucro = preco * (1 - taxa) - r.custoComFalha;
+      lista += '<div class="hero-tier' + (q === alvo ? ' ativo' : '') + '"><span>' + q + (q === teto ? '+' : '') + ' peças · ' + pctTexto(pq) + '% off' +
+        '<small>Lucro líquido R$ ' + fmt(lucro) + ' por peça</small></span><b>R$ ' + fmt(preco) + ' cada</b></div>';
+    }
+    if(teto > ate){
+      lista += '<div class="hero-nota">O desconto continua subindo até ' + pctTexto(descontoCfg.maximo) + '%, com ' + teto + ' peças.</div>';
+    }
+    document.getElementById('heroTierList').innerHTML = lista;
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+
+  // dicas dos campos de ajuste
+  const hp = document.getElementById('descHintPasso');
+  const hm = document.getElementById('descHintMax');
+  if(descontoCfg.passo > 0 && descontoCfg.maximo > 0){
+    hp.textContent = [2, 3, 4].map(q => q + (q === 2 ? ' peças: ' : ': ') + pctTexto(pctProgressivo(q)) + '%').join(' · ') + '…';
+  } else {
+    hp.textContent = 'Sem desconto';
+  }
+  if(teto !== null && r.precoFinal > 0){
+    const p = r.precoFinal * (1 - descontoCfg.maximo/100);
+    const m = ((p * (1 - taxa) - r.custoComFalha) / p) * 100;
+    const abaixo = m < descontoCfg.piso;
+    hm.textContent = 'Chega com ' + teto + ' peças. Margem na peça atual: ' + Math.round(m) + '%' + (abaixo ? ' (abaixo do mínimo)' : '');
+    hm.style.color = abaixo ? 'var(--danger)' : 'var(--teal)';
+  } else {
+    hm.textContent = teto !== null ? 'Chega com ' + teto + ' peças.' : '';
+    hm.style.color = '';
+  }
+}
+
 // ---- Backup ----
 function exportarDados(){
   const dados = {
     filamentos3d: loadFilamentos(),
     historico3d: loadHistorico(),
     orcamentoItens3d: loadOrcamentoItens(),
-    nomeVendedor3d: localStorage.getItem('nomeVendedor3d') || ''
+    nomeVendedor3d: localStorage.getItem('nomeVendedor3d') || '',
+    descontoConfig3d: descontoCfg
   };
   const blob = new Blob([JSON.stringify(dados, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
@@ -1160,6 +1507,7 @@ function importarDados(event){
       if(dados.historico3d) saveHistorico(dados.historico3d);
       if(dados.orcamentoItens3d) saveOrcamentoItens(dados.orcamentoItens3d);
       if(dados.nomeVendedor3d !== undefined) localStorage.setItem('nomeVendedor3d', dados.nomeVendedor3d);
+      if(descontoValido(dados.descontoConfig3d)){ descontoCfg = dados.descontoConfig3d; salvarDescontoCfg(); preencherCamposDesconto(); }
 
       renderFilamentos();
       renderFilamentoChips();
@@ -1258,6 +1606,7 @@ function calcular(){
   btn.classList.toggle('ativo', !arredondarAtivo);
   orig.style.display = arredondarAtivo ? 'block' : 'none';
   orig.textContent = 'Preço calculado: R$ ' + fmt(r.precoCalculado);
+  atualizarDescontoUI();
 }
 
 // ---- Tempo em horas e minutos ----
@@ -1282,6 +1631,8 @@ renderPalette();
 renderFilamentos();
 renderFilamentoChips();
 renderHistorico();
+preencherCamposDesconto();
+document.getElementById('qtdItemAtual').addEventListener('input', sincronizarQtdOrcamento);
 renderOrcamentoItens();
 carregarVendedorSalvo();
 sincronizarTempos();
