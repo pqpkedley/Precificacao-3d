@@ -287,6 +287,21 @@
     font-size:14.5px;
   }
   .row input.hm{ width:44px; }
+  .row input.parte-nome{
+    width:100%;
+    text-align:left;
+    font-family:'Inter', sans-serif;
+    font-weight:400;
+    font-size:14.5px;
+  }
+  .row .rlabel.cresce{ flex:1; min-width:0; }
+  .card .partes-box .row:last-child{ border-bottom:1px solid var(--row-divider); }
+  .parte-total{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:16px;
+    color:var(--teal);
+  }
   .row input:focus{ outline:none; }
   .btn-toggle{
     border:none;
@@ -599,9 +614,22 @@
   <div class="section-label">Material</div>
   <div class="card">
     <div class="row">
+      <div class="rlabel">Modo multipartes
+        <span class="hint">Para peças com várias partes: informe o peso e o tempo de cada parte e a calculadora soma tudo.</span>
+      </div>
+      <div class="valuewrap"><button class="btn-toggle" id="multiToggle" onclick="alternarMulti()">Desligado</button></div>
+    </div>
+    <div class="row" id="multiNRow" style="display:none;">
+      <div class="rlabel">Quantidade de partes</div>
+      <div class="valuewrap"><input type="number" id="multiN" value="2" min="1" max="30" step="1" inputmode="numeric" oninput="mudouNumPartes()"></div>
+    </div>
+    <input type="hidden" id="multiAtivo" value="0">
+    <input type="hidden" id="multiDados" value="[]">
+    <div class="row" id="pesoRow">
       <div class="rlabel">Peso da peça</div>
       <div class="valuewrap"><input type="number" id="peso" value="35" min="0" step="0.1"><span class="unit">g</span></div>
     </div>
+    <div class="partes-box" id="pesoPartesBox" style="display:none;"></div>
     <div class="row" style="flex-direction:column; align-items:stretch; gap:8px;">
       <div class="rlabel">Filamentos usados
         <span class="hint">Toque para escolher um ou mais — o preço por kg vira a média entre eles. Se a peça usa uma cor só, selecione apenas um.</span>
@@ -624,10 +652,11 @@
 
   <div class="section-label">Tempo e energia</div>
   <div class="card">
-    <div class="row">
+    <div class="row" id="tempoRow">
       <div class="rlabel">Tempo de impressão</div>
       <div class="valuewrap"><input type="hidden" id="tempo" value="4"><input type="number" class="hm" id="tempoH" value="4" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">h</span><input type="number" class="hm" id="tempoM" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">min</span></div>
     </div>
+    <div class="partes-box" id="tempoPartesBox" style="display:none;"></div>
     <div class="row">
       <div class="rlabel">Potência média</div>
       <div class="valuewrap"><input type="number" id="potencia" value="150" min="0" step="10"><span class="unit">W</span></div>
@@ -975,8 +1004,120 @@ function aplicarMediaFilamentos(){
   calcular();
 }
 
+// ---- Modo multipartes ----
+// Cada parte tem nome (opcional), peso e tempo. A calculadora soma tudo e joga o total
+// nos campos de peso (#peso) e tempo (#tempo, em horas decimais), que o cálculo já usa.
+// Os dados das partes ficam em #multiDados (JSON) e vão junto com a peça no histórico.
+// A lista pode ser maior que a quantidade em #multiN: ao diminuir e aumentar de novo, nada se perde.
+function multiAtivo(){ return document.getElementById('multiAtivo').value === '1'; }
+function lerPartes(){
+  try{
+    const a = JSON.parse(document.getElementById('multiDados').value || '[]');
+    return Array.isArray(a) ? a : [];
+  }catch(e){ return []; }
+}
+function gravarPartes(a){ document.getElementById('multiDados').value = JSON.stringify(a); }
+function numPartes(){
+  return Math.min(30, Math.max(1, Math.floor(parseFloat(document.getElementById('multiN').value)) || 1));
+}
+function escHtml(x){
+  return String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function garantirPartes(partes, n){
+  while(partes.length < n) partes.push({ n:'', p:'', h:'', m:'' });
+  return partes;
+}
+function nomeParte(partes, i){
+  return ((partes[i] && partes[i].n) || '').trim() || ('Parte ' + (i + 1));
+}
+
+function renderPartes(partes, n){
+  let pesoHtml = '', tempoHtml = '';
+  for(let i = 0; i < n; i++){
+    const pt = partes[i];
+    pesoHtml += '<div class="row"><div class="rlabel cresce"><input type="text" class="parte-nome" id="parteNome' + i + '" maxlength="24" ' +
+      'placeholder="Parte ' + (i + 1) + '" value="' + escHtml(pt.n) + '" oninput="mudouParte()"></div>' +
+      '<div class="valuewrap"><input type="number" id="partePeso' + i + '" value="' + escHtml(pt.p) + '" min="0" step="0.1" inputmode="decimal" oninput="mudouParte()"><span class="unit">g</span></div></div>';
+    tempoHtml += '<div class="row"><div class="rlabel cresce" id="parteLabelTempo' + i + '">' + escHtml(nomeParte(partes, i)) + '</div>' +
+      '<div class="valuewrap"><input type="number" class="hm" id="parteH' + i + '" value="' + escHtml(pt.h) + '" min="0" step="1" inputmode="numeric" oninput="mudouParte()"><span class="unit">h</span>' +
+      '<input type="number" class="hm" id="parteM' + i + '" value="' + escHtml(pt.m) + '" min="0" step="1" inputmode="numeric" oninput="mudouParte()"><span class="unit">min</span></div></div>';
+  }
+  pesoHtml += '<div class="row"><div class="rlabel"><b>Peso total</b></div><div class="valuewrap"><span class="parte-total" id="pesoTotalTxt">0 g</span></div></div>';
+  tempoHtml += '<div class="row"><div class="rlabel"><b>Tempo total</b></div><div class="valuewrap"><span class="parte-total" id="tempoTotalTxt">0 h 00 min</span></div></div>';
+  document.getElementById('pesoPartesBox').innerHTML = pesoHtml;
+  document.getElementById('tempoPartesBox').innerHTML = tempoHtml;
+}
+
+function somarPartes(partes, n){
+  let peso = 0, minutos = 0;
+  for(let i = 0; i < n; i++){
+    peso += parseFloat(partes[i].p) || 0;
+    minutos += (parseFloat(partes[i].h) || 0) * 60 + (parseFloat(partes[i].m) || 0);
+  }
+  peso = Math.round(peso * 100) / 100;
+  minutos = Math.round(minutos);
+  document.getElementById('peso').value = String(peso);
+  document.getElementById('tempo').value = String(minutos / 60);
+  document.getElementById('pesoTotalTxt').textContent = String(peso).replace('.', ',') + ' g';
+  document.getElementById('tempoTotalTxt').textContent = Math.floor(minutos / 60) + ' h ' + String(minutos % 60).padStart(2, '0') + ' min';
+}
+
+// Mostra ou esconde os campos conforme o modo e refaz as linhas das partes.
+function aplicarMulti(){
+  const on = multiAtivo();
+  const t = document.getElementById('multiToggle');
+  t.textContent = on ? 'Ligado' : 'Desligado';
+  t.classList.toggle('on', on);
+  document.getElementById('multiNRow').style.display = on ? '' : 'none';
+  document.getElementById('pesoPartesBox').style.display = on ? '' : 'none';
+  document.getElementById('tempoPartesBox').style.display = on ? '' : 'none';
+  document.getElementById('pesoRow').style.display = on ? 'none' : '';
+  document.getElementById('tempoRow').style.display = on ? 'none' : '';
+  if(!on) return;
+  let partes = lerPartes();
+  if(!partes.length){
+    // primeira vez: o peso e o tempo que já estavam preenchidos viram a parte 1
+    partes = [{ n:'', p: document.getElementById('peso').value,
+                h: document.getElementById('tempoH').value, m: document.getElementById('tempoM').value }];
+    document.getElementById('multiN').value = '2';
+  }
+  const n = numPartes();
+  garantirPartes(partes, n);
+  gravarPartes(partes);
+  document.getElementById('multiN').value = n;
+  renderPartes(partes, n);
+  somarPartes(partes, n);
+}
+function alternarMulti(){
+  document.getElementById('multiAtivo').value = multiAtivo() ? '0' : '1';
+  aplicarMulti();
+  if(!multiAtivo()) sincronizarTempos(); // o total das partes fica nos campos simples
+  calcular();
+}
+function mudouNumPartes(){
+  if(!(parseFloat(document.getElementById('multiN').value) >= 1)) return; // campo vazio enquanto digita
+  const n = numPartes();
+  const partes = garantirPartes(lerPartes(), n);
+  gravarPartes(partes);
+  renderPartes(partes, n);
+  somarPartes(partes, n);
+  calcular();
+}
+function mudouParte(){
+  const n = numPartes();
+  const partes = garantirPartes(lerPartes(), n);
+  const val = id => document.getElementById(id).value;
+  for(let i = 0; i < n; i++){
+    partes[i] = { n: val('parteNome' + i), p: val('partePeso' + i), h: val('parteH' + i), m: val('parteM' + i) };
+    document.getElementById('parteLabelTempo' + i).textContent = nomeParte(partes, i);
+  }
+  gravarPartes(partes);
+  somarPartes(partes, n);
+  calcular();
+}
+
 // ---- Histórico de peças ----
-const CAMPOS_PECA = ['peso','precoFilamento','tempo','potencia','tarifa','valorMaquina','vidaUtil','horasTrabalho','valorHora','custosFixos','taxaFalha','margem','taxaPlataforma','filamentoSelectIds'];
+const CAMPOS_PECA = ['peso','precoFilamento','tempo','potencia','tarifa','valorMaquina','vidaUtil','horasTrabalho','valorHora','custosFixos','taxaFalha','margem','taxaPlataforma','filamentoSelectIds','multiAtivo','multiDados','multiN'];
 
 function loadHistorico(){
   try{ return JSON.parse(localStorage.getItem('historico3d') || '[]'); }
@@ -1010,7 +1151,7 @@ function salvarPeca(){
   nomeInput.value = '';
   renderHistorico();
 }
-const DEFAULTS_PECA = { peso:'35', precoFilamento:'90', tempo:'4', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'2000', horasTrabalho:'0.5', valorHora:'18', custosFixos:'3', taxaFalha:'10', margem:'40', taxaPlataforma:'0' };
+const DEFAULTS_PECA = { peso:'35', precoFilamento:'90', tempo:'4', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'2000', horasTrabalho:'0.5', valorHora:'18', custosFixos:'3', taxaFalha:'10', margem:'40', taxaPlataforma:'0', multiAtivo:'0', multiDados:'[]', multiN:'2' };
 
 function novaPeca(){
   document.getElementById('nomePecaAtual').value = '';
@@ -1022,6 +1163,7 @@ function novaPeca(){
   document.getElementById('filamentoSelectIds').value = '';
   renderFilamentoChips();
   fecharHistoricoDropdown();
+  aplicarMulti();
   sincronizarTempos();
   calcular();
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -1044,6 +1186,8 @@ function toggleFilamentosCadastradosDropdown(){
 function carregarPeca(id){
   const item = loadHistorico().find(p => p.id === id);
   if(!item) return;
+  // peças salvas antes do modo multipartes não têm esses campos: começam desligadas
+  ['multiAtivo','multiDados','multiN'].forEach(campoId => { document.getElementById(campoId).value = DEFAULTS_PECA[campoId]; });
   CAMPOS_PECA.forEach(campoId => {
     if(item.inputs[campoId] !== undefined){
       const el = document.getElementById(campoId);
@@ -1056,6 +1200,7 @@ function carregarPeca(id){
   }catch(e){ filamentosSelecionados = []; }
   renderFilamentoChips();
   fecharHistoricoDropdown();
+  aplicarMulti();
   sincronizarTempos();
   calcular();
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -1635,6 +1780,7 @@ preencherCamposDesconto();
 document.getElementById('qtdItemAtual').addEventListener('input', sincronizarQtdOrcamento);
 renderOrcamentoItens();
 carregarVendedorSalvo();
+aplicarMulti();
 sincronizarTempos();
 calcular();
 </script>
