@@ -286,6 +286,15 @@
     font-weight:400;
     font-size:14.5px;
   }
+  .row input.txtinput.largo{
+    width:100%;
+    box-sizing:border-box;
+    text-align:left;
+    background:rgba(255,255,255,.05);
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .row input.txtinput.largo:focus{ box-shadow:0 0 0 1px var(--molten); }
   .row input.hm{ width:44px; }
   .row input.parte-nome{
     width:100%;
@@ -560,9 +569,9 @@
 
   <div class="section-label">Peça</div>
   <div class="card">
-    <div class="row">
+    <div class="row" style="flex-direction:column; align-items:stretch; gap:8px;">
       <div class="rlabel">Nome da peça</div>
-      <div class="valuewrap"><input type="text" id="nomePecaAtual" class="txtinput" placeholder="Ex: Suporte de câmera"></div>
+      <input type="text" id="nomePecaAtual" class="txtinput largo" placeholder="Ex: Suporte de câmera">
     </div>
     <div class="orc-buttons">
       <button class="btn-secondary" onclick="novaPeca()">Nova peça</button>
@@ -627,7 +636,7 @@
     <input type="hidden" id="multiDados" value="[]">
     <div class="row" id="pesoRow">
       <div class="rlabel">Peso da peça</div>
-      <div class="valuewrap"><input type="number" id="peso" value="35" min="0" step="0.1"><span class="unit">g</span></div>
+      <div class="valuewrap"><input type="number" id="peso" value="" placeholder="0" min="0" step="0.1"><span class="unit">g</span></div>
     </div>
     <div class="partes-box" id="pesoPartesBox" style="display:none;"></div>
     <div class="row" style="flex-direction:column; align-items:stretch; gap:8px;">
@@ -646,7 +655,7 @@
       <div class="rlabel">Preço do filamento
         <span class="hint">Preenchido pela média dos filamentos escolhidos acima — pode ajustar aqui se precisar.</span>
       </div>
-      <div class="valuewrap"><span class="unit">R$</span><input type="number" id="precoFilamento" value="90" min="0" step="1"><span class="unit">/kg</span></div>
+      <div class="valuewrap"><span class="unit">R$</span><input type="number" id="precoFilamento" value="100" min="0" step="1"><span class="unit">/kg</span></div>
     </div>
   </div>
 
@@ -654,7 +663,7 @@
   <div class="card">
     <div class="row" id="tempoRow">
       <div class="rlabel">Tempo de impressão</div>
-      <div class="valuewrap"><input type="hidden" id="tempo" value="4"><input type="number" class="hm" id="tempoH" value="4" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">h</span><input type="number" class="hm" id="tempoM" value="0" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">min</span></div>
+      <div class="valuewrap"><input type="hidden" id="tempo" value=""><input type="number" class="hm" id="tempoH" value="" placeholder="0" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">h</span><input type="number" class="hm" id="tempoM" value="" placeholder="0" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('tempo')"><span class="unit">min</span></div>
     </div>
     <div class="partes-box" id="tempoPartesBox" style="display:none;"></div>
     <div class="row">
@@ -679,7 +688,7 @@
       <div class="rlabel">Vida útil estimada
         <span class="hint">1500–3000h é comum para uma FDM de entrada.</span>
       </div>
-      <div class="valuewrap"><input type="number" id="vidaUtil" value="2000" min="1" step="50"><span class="unit">h</span></div>
+      <div class="valuewrap"><input type="number" id="vidaUtil" value="8000" min="1" step="50"><span class="unit">h</span></div>
     </div>
   </div>
 
@@ -689,7 +698,7 @@
       <div class="rlabel">Horas de trabalho manual
         <span class="hint">Fatiamento, acabamento, embalagem — não o tempo de impressão sozinho.</span>
       </div>
-      <div class="valuewrap"><input type="hidden" id="horasTrabalho" value="0.5"><input type="number" class="hm" id="horasTrabalhoH" value="0" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('horasTrabalho')"><span class="unit">h</span><input type="number" class="hm" id="horasTrabalhoM" value="30" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('horasTrabalho')"><span class="unit">min</span></div>
+      <div class="valuewrap"><input type="hidden" id="horasTrabalho" value=""><input type="number" class="hm" id="horasTrabalhoH" value="" placeholder="0" min="0" step="1" inputmode="numeric" oninput="atualizarTempo('horasTrabalho')"><span class="unit">h</span><input type="number" class="hm" id="horasTrabalhoM" value="" placeholder="0" min="0" max="59" step="1" inputmode="numeric" oninput="atualizarTempo('horasTrabalho')"><span class="unit">min</span></div>
     </div>
     <div class="row">
       <div class="rlabel">Valor da sua hora</div>
@@ -703,17 +712,17 @@
       <div class="rlabel">Custos fixos por peça
         <span class="hint">Embalagem, etiqueta, cola, lixa, tinta.</span>
       </div>
-      <div class="valuewrap"><span class="unit">R$</span><input type="number" id="custosFixos" value="3" min="0" step="0.5"></div>
+      <div class="valuewrap"><span class="unit">R$</span><input type="number" id="custosFixos" value="" placeholder="0" min="0" step="0.5"></div>
     </div>
     <div class="row">
       <div class="rlabel">Margem de erro / falhas
         <span class="hint">Cobre peças que falham e precisam ser refeitas.</span>
       </div>
-      <div class="valuewrap"><input type="number" id="taxaFalha" value="10" min="0" step="1"><span class="unit">%</span></div>
+      <div class="valuewrap"><input type="number" id="taxaFalha" value="2" min="0" step="1"><span class="unit">%</span></div>
     </div>
     <div class="row">
       <div class="rlabel">Margem de lucro desejada</div>
-      <div class="valuewrap"><input type="number" id="margem" value="40" min="0" max="95" step="1"><span class="unit">%</span></div>
+      <div class="valuewrap"><input type="number" id="margem" value="" placeholder="0" min="0" max="95" step="1"><span class="unit">%</span></div>
     </div>
     <div class="row">
       <div class="rlabel">Taxa de marketplace
@@ -1037,10 +1046,10 @@ function renderPartes(partes, n){
     const pt = partes[i];
     pesoHtml += '<div class="row"><div class="rlabel cresce"><input type="text" class="parte-nome" id="parteNome' + i + '" maxlength="24" ' +
       'placeholder="Parte ' + (i + 1) + '" value="' + escHtml(pt.n) + '" oninput="mudouParte()"></div>' +
-      '<div class="valuewrap"><input type="number" id="partePeso' + i + '" value="' + escHtml(pt.p) + '" min="0" step="0.1" inputmode="decimal" oninput="mudouParte()"><span class="unit">g</span></div></div>';
+      '<div class="valuewrap"><input type="number" id="partePeso' + i + '" placeholder="0" value="' + escHtml(pt.p) + '" min="0" step="0.1" inputmode="decimal" oninput="mudouParte()"><span class="unit">g</span></div></div>';
     tempoHtml += '<div class="row"><div class="rlabel cresce" id="parteLabelTempo' + i + '">' + escHtml(nomeParte(partes, i)) + '</div>' +
-      '<div class="valuewrap"><input type="number" class="hm" id="parteH' + i + '" value="' + escHtml(pt.h) + '" min="0" step="1" inputmode="numeric" oninput="mudouParte()"><span class="unit">h</span>' +
-      '<input type="number" class="hm" id="parteM' + i + '" value="' + escHtml(pt.m) + '" min="0" step="1" inputmode="numeric" oninput="mudouParte()"><span class="unit">min</span></div></div>';
+      '<div class="valuewrap"><input type="number" class="hm" id="parteH' + i + '" placeholder="0" value="' + escHtml(pt.h) + '" min="0" step="1" inputmode="numeric" oninput="mudouParte()"><span class="unit">h</span>' +
+      '<input type="number" class="hm" id="parteM' + i + '" placeholder="0" value="' + escHtml(pt.m) + '" min="0" step="1" inputmode="numeric" oninput="mudouParte()"><span class="unit">min</span></div></div>';
   }
   pesoHtml += '<div class="row"><div class="rlabel"><b>Peso total</b></div><div class="valuewrap"><span class="parte-total" id="pesoTotalTxt">0 g</span></div></div>';
   tempoHtml += '<div class="row"><div class="rlabel"><b>Tempo total</b></div><div class="valuewrap"><span class="parte-total" id="tempoTotalTxt">0 h 00 min</span></div></div>';
@@ -1151,7 +1160,7 @@ function salvarPeca(){
   nomeInput.value = '';
   renderHistorico();
 }
-const DEFAULTS_PECA = { peso:'35', precoFilamento:'90', tempo:'4', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'2000', horasTrabalho:'0.5', valorHora:'18', custosFixos:'3', taxaFalha:'10', margem:'40', taxaPlataforma:'0', multiAtivo:'0', multiDados:'[]', multiN:'2' };
+const DEFAULTS_PECA = { peso:'', precoFilamento:'100', tempo:'', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'8000', horasTrabalho:'', valorHora:'18', custosFixos:'', taxaFalha:'2', margem:'', taxaPlataforma:'0', multiAtivo:'0', multiDados:'[]', multiN:'2' };
 
 function novaPeca(){
   document.getElementById('nomePecaAtual').value = '';
@@ -1758,12 +1767,21 @@ function calcular(){
 // Os campos escondidos #tempo e #horasTrabalho guardam o valor em horas decimais
 // (é o que o cálculo, o histórico e o backup usam). Os campos visíveis são só a entrada.
 function atualizarTempo(id){
+  if(document.getElementById(id + 'H').value === '' && document.getElementById(id + 'M').value === ''){
+    document.getElementById(id).value = '';
+    return;
+  }
   const h = parseFloat(document.getElementById(id + 'H').value) || 0;
   const m = parseFloat(document.getElementById(id + 'M').value) || 0;
   document.getElementById(id).value = String(Math.max(0, h + m/60));
 }
 function sincronizarTempos(){
   ['tempo','horasTrabalho'].forEach(id => {
+    if(document.getElementById(id).value === ''){
+      document.getElementById(id + 'H').value = '';
+      document.getElementById(id + 'M').value = '';
+      return;
+    }
     const dec = parseFloat(document.getElementById(id).value) || 0;
     const total = Math.round(dec * 60);
     document.getElementById(id + 'H').value = Math.floor(total / 60);
