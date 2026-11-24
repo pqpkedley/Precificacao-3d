@@ -573,6 +573,12 @@
       <div class="rlabel">Nome da peça</div>
       <input type="text" id="nomePecaAtual" class="txtinput largo" placeholder="Ex: Suporte de câmera">
     </div>
+    <div class="row" id="editandoRow" style="display:none;">
+      <div class="rlabel"><span id="editandoTexto" style="color:var(--molten); font-weight:600;"></span>
+        <span class="hint">O que você mudar atualiza esta peça no histórico. Para guardar como outra peça, use "Salvar como nova peça".</span>
+      </div>
+      <div class="valuewrap"><button class="btn-toggle" onclick="sairDaEdicao()">Sair</button></div>
+    </div>
     <div class="orc-buttons">
       <button class="btn-secondary" onclick="novaPeca()">Nova peça</button>
       <button class="btn-secondary" onclick="toggleHistoricoDropdown()">Escolher do histórico</button>
@@ -733,7 +739,10 @@
   </div>
 
   <div class="orc-buttons" style="padding:0 4px 4px;">
-    <button class="btn-primary" style="flex:none; width:100%;" onclick="salvarPeca()">Salvar peça no histórico</button>
+    <button class="btn-primary" id="btnSalvarPeca" style="flex:none; width:100%;" onclick="salvarPeca()">Salvar peça no histórico</button>
+  </div>
+  <div class="orc-buttons" id="salvarNovaRow" style="padding:0 4px 4px; display:none;">
+    <button class="btn-secondary" style="flex:none; width:100%;" onclick="salvarPeca(true)">Salvar como nova peça</button>
   </div>
 
   <div class="section-label">Resumo</div>
@@ -1135,10 +1144,30 @@ function loadHistorico(){
 function saveHistorico(arr){
   localStorage.setItem('historico3d', JSON.stringify(arr));
 }
-function salvarPeca(){
+// Peça que está sendo editada (veio do histórico). Enquanto houver uma, "Atualizar peça"
+// regrava a mesma entrada do histórico em vez de criar uma cópia.
+let pecaEditandoId = null;
+function atualizarEdicaoUI(){
+  const item = pecaEditandoId ? loadHistorico().find(p => p.id === pecaEditandoId) : null;
+  if(!item) pecaEditandoId = null;
+  document.getElementById('editandoRow').style.display = item ? 'flex' : 'none';
+  document.getElementById('salvarNovaRow').style.display = item ? 'flex' : 'none';
+  document.getElementById('btnSalvarPeca').textContent = item ? 'Atualizar peça' : 'Salvar peça no histórico';
+  if(item) document.getElementById('editandoTexto').textContent = 'Editando: ' + item.nome;
+}
+function sairDaEdicao(){
+  pecaEditandoId = null;
+  atualizarEdicaoUI();
+}
+function avisoNoBotao(texto){
+  const btn = document.getElementById('btnSalvarPeca');
+  btn.textContent = texto;
+  setTimeout(atualizarEdicaoUI, 1600);
+}
+function salvarPeca(comoNova){
   const nomeInput = document.getElementById('nomePecaAtual');
   const nome = nomeInput.value.trim();
-  if(!nome) return;
+  if(!nome){ nomeInput.focus(); return; }
 
   const inputs = {};
   CAMPOS_PECA.forEach(id => {
@@ -1148,21 +1177,39 @@ function salvarPeca(){
 
   const r = calcularValores();
   const arr = loadHistorico();
-  arr.unshift({
+  const pos = (pecaEditandoId && comoNova !== true) ? arr.findIndex(p => p.id === pecaEditandoId) : -1;
+  if(pos >= 0){
+    // atualiza a peça que está sendo editada, mantendo id, data e posição na lista
+    arr[pos] = { ...arr[pos], nome, inputs, precoFinal: r.precoFinal, lucroLiquido: r.lucroLiquido };
+    saveHistorico(arr);
+    renderHistorico();
+    avisoNoBotao('Peça atualizada ✓');
+    return;
+  }
+  const nova = {
     id: Date.now().toString(),
     nome,
     data: new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' }),
     inputs,
     precoFinal: r.precoFinal,
     lucroLiquido: r.lucroLiquido
-  });
+  };
+  arr.unshift(nova);
   saveHistorico(arr);
+  if(comoNova === true){
+    pecaEditandoId = nova.id; // a cópia passa a ser a peça em edição
+    renderHistorico();
+    avisoNoBotao('Salva como nova ✓');
+    return;
+  }
   nomeInput.value = '';
   renderHistorico();
 }
 const DEFAULTS_PECA = { peso:'', precoFilamento:'100', tempo:'', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'8000', horasTrabalho:'', valorHora:'18', custosFixos:'', taxaFalha:'2', margem:'', taxaPlataforma:'0', multiAtivo:'0', multiDados:'[]', multiN:'2' };
 
 function novaPeca(){
+  pecaEditandoId = null;
+  atualizarEdicaoUI();
   document.getElementById('nomePecaAtual').value = '';
   Object.keys(DEFAULTS_PECA).forEach(id => {
     const el = document.getElementById(id);
@@ -1204,6 +1251,8 @@ function carregarPeca(id){
     }
   });
   document.getElementById('nomePecaAtual').value = item.nome;
+  pecaEditandoId = id;
+  atualizarEdicaoUI();
   try{
     filamentosSelecionados = JSON.parse(document.getElementById('filamentoSelectIds').value || '[]');
   }catch(e){ filamentosSelecionados = []; }
@@ -1236,6 +1285,7 @@ function renderHistorico(){
       </div>
     </div>
   `).join('');
+  atualizarEdicaoUI(); // se a peça em edição foi apagada ou trocada (importação), sai do modo edição
 }
 
 // ---- Orçamento ----
