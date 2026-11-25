@@ -303,7 +303,7 @@
     display:flex; align-items:center; gap:6px;
     padding:7px 10px; border-radius:8px; cursor:pointer;
     border:1px solid var(--row-divider); margin-bottom:5px;
-    background:var(--card-bg); transition:border-color .15s;
+    background:var(--panel); transition:border-color .15s;
   }
   .cat-item:hover{ border-color:var(--teal); }
   .cat-item-nome{ flex:1; font-size:14px; font-weight:500; }
@@ -318,9 +318,10 @@
     background:rgba(0,0,0,.45); overflow-y:auto;
   }
   .modal-box{
-    background:var(--card-bg); border-radius:16px; max-width:430px;
+    background:var(--panel); color:var(--text-primary);
+    border-radius:16px; max-width:430px;
     margin:40px auto 24px; padding:20px;
-    box-shadow:0 8px 32px rgba(0,0,0,.2);
+    box-shadow:0 8px 32px rgba(0,0,0,.5);
   }
   .modal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .modal-title{ font-size:17px; font-weight:700; }
@@ -330,10 +331,10 @@
   .modal-field{ flex:1; position:relative; }
   .modal-prefix{ position:absolute; left:9px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--text-muted); pointer-events:none; }
   .modal-input{ width:100%; padding:8px 8px 8px 26px; border:1px solid var(--row-divider);
-    border-radius:8px; font-size:14px; background:var(--card-bg); color:var(--text);
+    border-radius:8px; font-size:14px; background:var(--bg); color:var(--text-primary);
     box-sizing:border-box; }
   .modal-input-full{ width:100%; padding:8px 10px; border:1px solid var(--row-divider);
-    border-radius:8px; font-size:14px; background:var(--card-bg); color:var(--text);
+    border-radius:8px; font-size:14px; background:var(--bg); color:var(--text-primary);
     box-sizing:border-box; }
 
   .row input.parte-nome{
