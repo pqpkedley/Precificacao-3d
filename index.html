@@ -296,6 +296,27 @@
   }
   .row input.txtinput.largo:focus{ box-shadow:0 0 0 1px var(--molten); }
   .row input.hm{ width:44px; }
+  /* ---- botão pequeno no padrão da app ---- */
+  .btn-sm{
+    border:none; border-radius:10px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+    padding:8px 14px; line-height:1;
+    background:rgba(255,255,255,.07); color:var(--text-primary);
+    white-space:nowrap;
+  }
+  .btn-sm.primario{ background:var(--molten); color:#17181b; }
+  .btn-sm.perigo{ background:transparent; border:1px solid var(--danger); color:var(--danger); }
+
+  /* dropdown inline do catálogo */
+  .cat-dropdown-trigger{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px; cursor:pointer; user-select:none;
+  }
+  .cat-dropdown-trigger .chevron{ transition:transform .2s; }
+  .cat-dropdown-trigger.aberto .chevron{ transform:rotate(180deg); }
+  .cat-dropdown-panel{ display:none; padding:0 12px 10px; }
+  .cat-dropdown-panel.aberto{ display:block; }
+
   /* ---- Itens adicionais / catálogo ---- */
   .adic-venda{ color:var(--teal); font-weight:600; }
   .adic-label{ font-size:12px; color:var(--text-muted); }
@@ -794,12 +815,17 @@
     <input type="hidden" id="itemAdicAtivo" value="0">
     <input type="hidden" id="itemAdicDados" value="[]">
     <div class="partes-box" id="itemAdicBox" style="display:none;"></div>
-    <div id="itemAdicCatalogoWrap" style="display:none; padding:0 4px 8px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:13px;font-weight:600;">Catálogo de materiais</span>
-        <button class="btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="abrirModalCatalogo()">Gerenciar</button>
+    <div id="itemAdicCatalogoWrap" style="display:none; border-top:1px solid var(--row-divider);">
+      <div class="cat-dropdown-trigger" id="catDropdownTrigger" onclick="toggleCatDropdown()">
+        <span style="font-size:14px;font-weight:600;">Catálogo de materiais</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn-sm" onclick="event.stopPropagation();abrirModalCatalogo()">Gerenciar</button>
+          <span class="chevron">▾</span>
+        </div>
       </div>
-      <div id="catalogoListaInline"></div>
+      <div class="cat-dropdown-panel" id="catDropdownPanel">
+        <div id="catalogoListaInline"></div>
+      </div>
     </div>
   </div>
 
@@ -1336,11 +1362,18 @@ function renderModalCatalogo(){
     `<div class="cat-item" style="cursor:default;">
       <span class="cat-item-nome">${escHtml(m.n)}</span>
       <span class="cat-item-preco">custo R$ ${fmt(parseFloat(m.c)||0)} · venda R$ ${fmt(parseFloat(m.v)||0)}</span>
-      <button class="cat-item-btn" style="border-color:var(--danger);color:var(--danger);"
-        onclick="removerDoCatalogo(${i})">Remover</button>
+      <button class="btn-sm perigo" onclick="removerDoCatalogo(${i})">Remover</button>
     </div>`).join('');
 }
 
+function toggleCatDropdown(){
+  const trigger = document.getElementById('catDropdownTrigger');
+  const panel = document.getElementById('catDropdownPanel');
+  const abrindo = !panel.classList.contains('aberto');
+  panel.classList.toggle('aberto', abrindo);
+  trigger.classList.toggle('aberto', abrindo);
+  if(abrindo) renderCatalogoInline();
+}
 function abrirModalCatalogo(){
   renderModalCatalogo();
   document.getElementById('modalCatalogo').style.display='block';
@@ -2119,7 +2152,7 @@ calcular();
       <span class="modal-title">Catálogo de materiais</span>
       <button class="modal-close" onclick="fecharModalCatalogo()">×</button>
     </div>
-    <div id="modalCatalogoLista"></div>
+    <div id="modalCatalogoLista" style="max-height:220px;overflow-y:auto;margin-bottom:4px;"></div>
     <div class="modal-add-label">Adicionar material</div>
     <input id="catNomeInput" type="text" placeholder="Nome (ex: Caixa de papelão P)" maxlength="40" class="modal-input-full" style="margin-bottom:6px;">
     <div class="modal-row">
@@ -2132,7 +2165,7 @@ calcular();
         <input id="catVendaInput" type="number" placeholder="Preço de venda" min="0" step="0.01" inputmode="decimal" class="modal-input">
       </div>
     </div>
-    <button class="btn-primary" style="width:100%;margin-top:4px;" onclick="salvarNoCatalogo()">Adicionar ao catálogo</button>
+    <button class="btn-sm primario" style="width:100%;margin-top:8px;padding:13px 0;font-size:14px;border-radius:12px;" onclick="salvarNoCatalogo()">Adicionar ao catálogo</button>
   </div>
 </div>
 </body>
