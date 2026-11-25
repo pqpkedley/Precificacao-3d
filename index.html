@@ -296,6 +296,46 @@
   }
   .row input.txtinput.largo:focus{ box-shadow:0 0 0 1px var(--molten); }
   .row input.hm{ width:44px; }
+  /* ---- Itens adicionais / catálogo ---- */
+  .adic-venda{ color:var(--teal); font-weight:600; }
+  .adic-label{ font-size:12px; color:var(--text-muted); }
+  .cat-item{
+    display:flex; align-items:center; gap:6px;
+    padding:7px 10px; border-radius:8px; cursor:pointer;
+    border:1px solid var(--row-divider); margin-bottom:5px;
+    background:var(--card-bg); transition:border-color .15s;
+  }
+  .cat-item:hover{ border-color:var(--teal); }
+  .cat-item-nome{ flex:1; font-size:14px; font-weight:500; }
+  .cat-item-preco{ font-size:12px; color:var(--text-muted); white-space:nowrap; }
+  .cat-item-btn{ font-size:12px; padding:3px 9px; border-radius:6px;
+    border:1px solid var(--teal); color:var(--teal); background:transparent;
+    cursor:pointer; white-space:nowrap; }
+  .cat-item-btn:hover{ background:var(--teal); color:#fff; }
+  .cat-vazio{ font-size:13px; color:var(--text-muted); padding:6px 2px; }
+  .modal-overlay{
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(0,0,0,.45); overflow-y:auto;
+  }
+  .modal-box{
+    background:var(--card-bg); border-radius:16px; max-width:430px;
+    margin:40px auto 24px; padding:20px;
+    box-shadow:0 8px 32px rgba(0,0,0,.2);
+  }
+  .modal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .modal-title{ font-size:17px; font-weight:700; }
+  .modal-close{ background:none; border:none; font-size:24px; cursor:pointer; color:var(--text-muted); line-height:1; }
+  .modal-add-label{ font-size:13px; font-weight:600; margin:14px 0 8px; padding-top:14px; border-top:1px solid var(--row-divider); }
+  .modal-row{ display:flex; gap:6px; margin-bottom:6px; }
+  .modal-field{ flex:1; position:relative; }
+  .modal-prefix{ position:absolute; left:9px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--text-muted); pointer-events:none; }
+  .modal-input{ width:100%; padding:8px 8px 8px 26px; border:1px solid var(--row-divider);
+    border-radius:8px; font-size:14px; background:var(--card-bg); color:var(--text);
+    box-sizing:border-box; }
+  .modal-input-full{ width:100%; padding:8px 10px; border:1px solid var(--row-divider);
+    border-radius:8px; font-size:14px; background:var(--card-bg); color:var(--text);
+    box-sizing:border-box; }
+
   .row input.parte-nome{
     width:100%;
     text-align:left;
@@ -738,6 +778,30 @@
     </div>
   </div>
 
+  <div class="section-label">Itens adicionais
+    <span class="hint">Embalagem, acessórios, brindes. Informe o custo (seu) e o preço de venda (do cliente).</span>
+  </div>
+  <div class="card">
+    <div class="row">
+      <div class="rlabel">Itens adicionais</div>
+      <div class="valuewrap"><button class="btn-toggle" id="itemAdicToggle" onclick="alternarItemAdic()">Desligado</button></div>
+    </div>
+    <div class="row" id="itemAdicNRow" style="display:none;">
+      <div class="rlabel">Quantidade de itens</div>
+      <div class="valuewrap"><input type="number" id="itemAdicN" value="1" min="1" max="20" step="1" inputmode="numeric" oninput="mudouNumItemAdic()"></div>
+    </div>
+    <input type="hidden" id="itemAdicAtivo" value="0">
+    <input type="hidden" id="itemAdicDados" value="[]">
+    <div class="partes-box" id="itemAdicBox" style="display:none;"></div>
+    <div id="itemAdicCatalogoWrap" style="display:none; padding:0 4px 8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:600;">Catálogo de materiais</span>
+        <button class="btn-secondary" style="font-size:12px;padding:4px 10px;" onclick="abrirModalCatalogo()">Gerenciar</button>
+      </div>
+      <div id="catalogoListaInline"></div>
+    </div>
+  </div>
+
   <div class="orc-buttons" style="padding:0 4px 4px;">
     <button class="btn-primary" id="btnSalvarPeca" style="flex:none; width:100%;" onclick="salvarPeca()">Salvar peça no histórico</button>
   </div>
@@ -752,7 +816,8 @@
     <div class="sumrow"><span class="k">Depreciação</span><span class="v" id="rDeprec">R$ 0,00</span></div>
     <div class="sumrow"><span class="k">Mão de obra</span><span class="v" id="rMaoObra">R$ 0,00</span></div>
     <div class="sumrow"><span class="k">Custos fixos</span><span class="v" id="rFixos">R$ 0,00</span></div>
-    <div class="sumrow total"><span class="k">Custo com margem de falha</span><span class="v" id="rCustoTotal">R$ 0,00</span></div>
+    <div class="sumrow" id="rItemAdicRow" style="display:none;"><span class="k">Itens adicionais (seu custo)</span><span class="v" id="rItemAdic">—</span></div>
+    <div class="sumrow total"><span class="k">Custo total com falha + itens</span><span class="v" id="rCustoTotal">R$ 0,00</span></div>
     <div class="sumrow"><span class="k">Taxa de marketplace</span><span class="v" id="rTaxaPlataforma">R$ 0,00</span></div>
     <div class="sumrow profit"><span class="k">Lucro líquido</span><span class="v" id="rLucro">R$ 0,00</span></div>
   </div>
@@ -1134,8 +1199,181 @@ function mudouParte(){
   calcular();
 }
 
+// ---- Itens adicionais ----
+// Lógica análoga ao modo multipartes.
+// Cada item tem: n (nome), c (custo p/ vendedor), v (preço de venda p/ cliente).
+// custoTotal dos itens entra no denominador do preço; vendaTotal é somada ao precoFinal.
+
+function itemAdicAtivo(){ return document.getElementById('itemAdicAtivo').value === '1'; }
+function lerItemAdic(){
+  try{ const a = JSON.parse(document.getElementById('itemAdicDados').value||'[]'); return Array.isArray(a)?a:[]; }
+  catch(e){ return []; }
+}
+function gravarItemAdic(a){ document.getElementById('itemAdicDados').value = JSON.stringify(a); }
+function numItemAdic(){
+  return Math.min(20, Math.max(1, Math.floor(parseFloat(document.getElementById('itemAdicN').value))||1));
+}
+function garantirItemAdic(itens, n){
+  while(itens.length < n) itens.push({n:'',c:'',v:''});
+  return itens;
+}
+function somarItemAdic(itens, n){
+  let custo=0, venda=0;
+  for(let i=0;i<n;i++){ custo+=parseFloat(itens[i].c)||0; venda+=parseFloat(itens[i].v)||0; }
+  return { custo:Math.round(custo*100)/100, venda:Math.round(venda*100)/100 };
+}
+
+function renderItemAdic(itens, n){
+  let html='';
+  for(let i=0;i<n;i++){
+    const it=itens[i];
+    html+=`<div class="row">
+  <div class="rlabel cresce"><input type="text" class="parte-nome" id="iadicNome${i}" maxlength="30"
+    placeholder="Item ${i+1}" value="${escHtml(it.n)}" oninput="mudouItemAdic()"></div>
+  <div class="valuewrap" style="gap:1px;flex-wrap:nowrap;">
+    <span class="unit adic-label">custo</span><span class="unit">R$</span>
+    <input type="number" id="iadicCusto${i}" value="${escHtml(it.c)}" min="0" step="0.01" inputmode="decimal"
+      style="width:50px;" oninput="mudouItemAdic()">
+    <span class="unit adic-label" style="margin-left:3px;">venda</span><span class="unit">R$</span>
+    <input type="number" id="iadicVenda${i}" value="${escHtml(it.v)}" min="0" step="0.01" inputmode="decimal"
+      style="width:50px;" class="adic-venda" oninput="mudouItemAdic()">
+  </div>
+</div>`;
+  }
+  document.getElementById('itemAdicBox').innerHTML = html;
+}
+
+function aplicarItemAdic(){
+  const on = itemAdicAtivo();
+  const t = document.getElementById('itemAdicToggle');
+  t.textContent = on ? 'Ligado' : 'Desligado';
+  t.classList.toggle('on', on);
+  document.getElementById('itemAdicNRow').style.display = on ? '' : 'none';
+  document.getElementById('itemAdicBox').style.display = on ? '' : 'none';
+  document.getElementById('itemAdicCatalogoWrap').style.display = on ? '' : 'none';
+  if(!on) return;
+  let itens = lerItemAdic();
+  const n = numItemAdic();
+  garantirItemAdic(itens, n);
+  gravarItemAdic(itens);
+  document.getElementById('itemAdicN').value = n;
+  renderItemAdic(itens, n);
+  renderCatalogoInline();
+}
+function alternarItemAdic(){
+  document.getElementById('itemAdicAtivo').value = itemAdicAtivo() ? '0' : '1';
+  aplicarItemAdic();
+  calcular();
+}
+function mudouNumItemAdic(){
+  if(!(parseFloat(document.getElementById('itemAdicN').value)>=1)) return;
+  const n = numItemAdic();
+  const itens = garantirItemAdic(lerItemAdic(), n);
+  gravarItemAdic(itens);
+  renderItemAdic(itens, n);
+  calcular();
+}
+function mudouItemAdic(){
+  const n = numItemAdic();
+  const itens = garantirItemAdic(lerItemAdic(), n);
+  const val = id => { const el=document.getElementById(id); return el?el.value:''; };
+  for(let i=0;i<n;i++){
+    itens[i]={n:val('iadicNome'+i), c:val('iadicCusto'+i), v:val('iadicVenda'+i)};
+  }
+  gravarItemAdic(itens);
+  calcular();
+}
+
+// ---- Catálogo de materiais ----
+function loadCatalogo(){
+  try{ return JSON.parse(localStorage.getItem('catalogoMateriais3d')||'[]'); }
+  catch(e){ return []; }
+}
+function saveCatalogo(a){ localStorage.setItem('catalogoMateriais3d', JSON.stringify(a)); }
+
+function renderCatalogoInline(){
+  const cat = loadCatalogo();
+  const wrap = document.getElementById('catalogoListaInline');
+  if(!wrap) return;
+  if(!cat.length){
+    wrap.innerHTML='<div class="cat-vazio">Catálogo vazio — clique em "Gerenciar" para adicionar materiais.</div>';
+    return;
+  }
+  wrap.innerHTML = cat.map((m,i)=>
+    `<div class="cat-item" onclick="usarItemCatalogo(${i})">
+      <span class="cat-item-nome">${escHtml(m.n)}</span>
+      <span class="cat-item-preco">custo R$ ${fmt(parseFloat(m.c)||0)} · venda R$ ${fmt(parseFloat(m.v)||0)}</span>
+      <button class="cat-item-btn" onclick="event.stopPropagation();usarItemCatalogo(${i})">Usar</button>
+    </div>`).join('');
+}
+
+function usarItemCatalogo(idx){
+  const m = loadCatalogo()[idx]; if(!m) return;
+  const n = numItemAdic();
+  const itens = garantirItemAdic(lerItemAdic(), n);
+  let alvo = itens.findIndex(it=>!it.n&&!it.c&&!it.v);
+  if(alvo<0){
+    const novoN = Math.min(20, n+1);
+    document.getElementById('itemAdicN').value = novoN;
+    garantirItemAdic(itens, novoN);
+    alvo = novoN-1;
+  }
+  itens[alvo]={n:m.n, c:m.c, v:m.v};
+  gravarItemAdic(itens);
+  renderItemAdic(itens, numItemAdic());
+  calcular();
+}
+
+function renderModalCatalogo(){
+  const cat = loadCatalogo();
+  const el = document.getElementById('modalCatalogoLista');
+  if(!cat.length){
+    el.innerHTML='<div class="cat-vazio">Nenhum material cadastrado ainda.</div>';
+    return;
+  }
+  el.innerHTML = cat.map((m,i)=>
+    `<div class="cat-item" style="cursor:default;">
+      <span class="cat-item-nome">${escHtml(m.n)}</span>
+      <span class="cat-item-preco">custo R$ ${fmt(parseFloat(m.c)||0)} · venda R$ ${fmt(parseFloat(m.v)||0)}</span>
+      <button class="cat-item-btn" style="border-color:var(--danger);color:var(--danger);"
+        onclick="removerDoCatalogo(${i})">Remover</button>
+    </div>`).join('');
+}
+
+function abrirModalCatalogo(){
+  renderModalCatalogo();
+  document.getElementById('modalCatalogo').style.display='block';
+}
+function fecharModalCatalogo(e){
+  if(e && e.target !== document.getElementById('modalCatalogo') && e.type==='click') return;
+  document.getElementById('modalCatalogo').style.display='none';
+  renderCatalogoInline();
+}
+
+function salvarNoCatalogo(){
+  const nome = document.getElementById('catNomeInput').value.trim();
+  if(!nome){ document.getElementById('catNomeInput').focus(); return; }
+  const custo = document.getElementById('catCustoInput').value;
+  const venda = document.getElementById('catVendaInput').value;
+  const cat = loadCatalogo();
+  cat.push({n:nome, c:custo, v:venda});
+  saveCatalogo(cat);
+  document.getElementById('catNomeInput').value='';
+  document.getElementById('catCustoInput').value='';
+  document.getElementById('catVendaInput').value='';
+  renderModalCatalogo();
+  renderCatalogoInline();
+}
+
+function removerDoCatalogo(idx){
+  const cat = loadCatalogo();
+  cat.splice(idx,1);
+  saveCatalogo(cat);
+  renderModalCatalogo();
+}
+
 // ---- Histórico de peças ----
-const CAMPOS_PECA = ['peso','precoFilamento','tempo','potencia','tarifa','valorMaquina','vidaUtil','horasTrabalho','valorHora','custosFixos','taxaFalha','margem','taxaPlataforma','filamentoSelectIds','multiAtivo','multiDados','multiN'];
+const CAMPOS_PECA = ['peso','precoFilamento','tempo','potencia','tarifa','valorMaquina','vidaUtil','horasTrabalho','valorHora','custosFixos','taxaFalha','margem','taxaPlataforma','filamentoSelectIds','multiAtivo','multiDados','multiN','itemAdicAtivo','itemAdicDados','itemAdicN'];
 
 function loadHistorico(){
   try{ return JSON.parse(localStorage.getItem('historico3d') || '[]'); }
@@ -1205,7 +1443,7 @@ function salvarPeca(comoNova){
   nomeInput.value = '';
   renderHistorico();
 }
-const DEFAULTS_PECA = { peso:'', precoFilamento:'100', tempo:'', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'8000', horasTrabalho:'', valorHora:'18', custosFixos:'', taxaFalha:'2', margem:'', taxaPlataforma:'0', multiAtivo:'0', multiDados:'[]', multiN:'2' };
+const DEFAULTS_PECA = { peso:'', precoFilamento:'100', tempo:'', potencia:'150', tarifa:'1.15', valorMaquina:'3100', vidaUtil:'8000', horasTrabalho:'', valorHora:'18', custosFixos:'', taxaFalha:'2', margem:'', taxaPlataforma:'0', multiAtivo:'0', multiDados:'[]', multiN:'2', itemAdicAtivo:'0', itemAdicDados:'[]', itemAdicN:'1' };
 
 function novaPeca(){
   pecaEditandoId = null;
@@ -1220,6 +1458,7 @@ function novaPeca(){
   renderFilamentoChips();
   fecharHistoricoDropdown();
   aplicarMulti();
+  aplicarItemAdic();
   sincronizarTempos();
   calcular();
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -1243,7 +1482,7 @@ function carregarPeca(id){
   const item = loadHistorico().find(p => p.id === id);
   if(!item) return;
   // peças salvas antes do modo multipartes não têm esses campos: começam desligadas
-  ['multiAtivo','multiDados','multiN'].forEach(campoId => { document.getElementById(campoId).value = DEFAULTS_PECA[campoId]; });
+  ['multiAtivo','multiDados','multiN','itemAdicAtivo','itemAdicDados','itemAdicN'].forEach(campoId => { document.getElementById(campoId).value = DEFAULTS_PECA[campoId]; });
   CAMPOS_PECA.forEach(campoId => {
     if(item.inputs[campoId] !== undefined){
       const el = document.getElementById(campoId);
@@ -1259,6 +1498,7 @@ function carregarPeca(id){
   renderFilamentoChips();
   fecharHistoricoDropdown();
   aplicarMulti();
+  aplicarItemAdic();
   sincronizarTempos();
   calcular();
   window.scrollTo({ top:0, behavior:'smooth' });
@@ -1774,14 +2014,26 @@ function calcularValores(){
   const subtotal = custoFilamento + custoEnergia + custoDeprec + custoMaoObra + custosFixos;
   const custoComFalha = subtotal * (1 + taxaFalha/100);
 
+  // Itens adicionais: o custo é coberto pela margem; a venda é somada ao preço final
+  let custoItemAdic = 0, vendaItemAdic = 0;
+  if(itemAdicAtivo()){
+    const tot = somarItemAdic(lerItemAdic(), numItemAdic());
+    custoItemAdic = tot.custo;
+    vendaItemAdic = tot.venda;
+  }
+  const custoTotal = custoComFalha + custoItemAdic;
+
   let divisor = 1 - ((margem + taxaPlataforma)/100);
   if (divisor <= 0.01) divisor = 0.01;
-  const precoCalculado = custoComFalha / divisor;
+  // O preço cobre o custo (incluindo itens) com a margem pedida, mais a venda dos itens por cima
+  const precoCalculado = (custoTotal / divisor) + vendaItemAdic;
   const precoFinal = arredondarAtivo ? arredondarPreco(precoCalculado) : precoCalculado;
   const valorTaxaPlataforma = precoFinal * (taxaPlataforma/100);
-  const lucroLiquido = precoFinal - custoComFalha - valorTaxaPlataforma;
+  const lucroLiquido = precoFinal - custoTotal - valorTaxaPlataforma;
 
-  return { custoFilamento, custoEnergia, custoDeprec, custoMaoObra, custosFixos, custoComFalha, valorTaxaPlataforma, precoCalculado, precoFinal, lucroLiquido };
+  return { custoFilamento, custoEnergia, custoDeprec, custoMaoObra, custosFixos,
+           custoComFalha, custoItemAdic, vendaItemAdic, custoTotal,
+           valorTaxaPlataforma, precoCalculado, precoFinal, lucroLiquido };
 }
 
 function calcular(){
@@ -1792,7 +2044,13 @@ function calcular(){
   document.getElementById('rDeprec').textContent = 'R$ ' + fmt(r.custoDeprec);
   document.getElementById('rMaoObra').textContent = 'R$ ' + fmt(r.custoMaoObra);
   document.getElementById('rFixos').textContent = 'R$ ' + fmt(r.custosFixos);
-  document.getElementById('rCustoTotal').textContent = 'R$ ' + fmt(r.custoComFalha);
+  const temAdic = itemAdicAtivo() && (r.custoItemAdic > 0 || r.vendaItemAdic > 0);
+  document.getElementById('rItemAdicRow').style.display = temAdic ? '' : 'none';
+  if(temAdic){
+    document.getElementById('rItemAdic').textContent =
+      'custo R$ '+fmt(r.custoItemAdic)+' · venda R$ '+fmt(r.vendaItemAdic);
+  }
+  document.getElementById('rCustoTotal').textContent = 'R$ ' + fmt(r.custoTotal);
   document.getElementById('rTaxaPlataforma').textContent = 'R$ ' + fmt(r.valorTaxaPlataforma);
   document.getElementById('rLucro').textContent = 'R$ ' + fmt(r.lucroLiquido);
 
@@ -1849,8 +2107,32 @@ document.getElementById('qtdItemAtual').addEventListener('input', sincronizarQtd
 renderOrcamentoItens();
 carregarVendedorSalvo();
 aplicarMulti();
+aplicarItemAdic();
 sincronizarTempos();
 calcular();
 </script>
+<!-- Modal catálogo de materiais -->
+<div id="modalCatalogo" class="modal-overlay" onclick="fecharModalCatalogo(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">Catálogo de materiais</span>
+      <button class="modal-close" onclick="fecharModalCatalogo()">×</button>
+    </div>
+    <div id="modalCatalogoLista"></div>
+    <div class="modal-add-label">Adicionar material</div>
+    <input id="catNomeInput" type="text" placeholder="Nome (ex: Caixa de papelão P)" maxlength="40" class="modal-input-full" style="margin-bottom:6px;">
+    <div class="modal-row">
+      <div class="modal-field">
+        <span class="modal-prefix">R$</span>
+        <input id="catCustoInput" type="number" placeholder="Seu custo" min="0" step="0.01" inputmode="decimal" class="modal-input">
+      </div>
+      <div class="modal-field">
+        <span class="modal-prefix">R$</span>
+        <input id="catVendaInput" type="number" placeholder="Preço de venda" min="0" step="0.01" inputmode="decimal" class="modal-input">
+      </div>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:4px;" onclick="salvarNoCatalogo()">Adicionar ao catálogo</button>
+  </div>
+</div>
 </body>
 </html>
