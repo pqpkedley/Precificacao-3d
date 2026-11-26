@@ -318,6 +318,32 @@
   .cat-dropdown-panel.aberto{ display:block; }
 
   /* ---- Itens adicionais / catálogo ---- */
+  /* bloco de um item adicional (duas linhas internas) */
+  .adic-bloco{
+    padding:10px 16px 10px;
+    border-bottom:1px solid var(--row-divider);
+  }
+  .adic-bloco:last-child{ border-bottom:none; }
+  .adic-linha-nome{
+    display:flex; align-items:center; margin-bottom:6px;
+  }
+  .adic-linha-nome input{
+    flex:1; background:transparent; border:none; border-bottom:1px solid var(--row-divider);
+    color:var(--text-primary); font-family:'Inter',sans-serif; font-size:14px;
+    padding:2px 0 4px; outline:none;
+  }
+  .adic-linha-nome input:focus{ border-bottom-color:var(--molten); }
+  .adic-linha-vals{
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  }
+  .adic-linha-vals .unit{ font-size:12px; color:var(--text-muted); }
+  .adic-linha-vals input{
+    width:52px; background:var(--bg); border:1px solid var(--row-divider);
+    border-radius:6px; color:var(--text-primary); font-family:'Inter',sans-serif;
+    font-size:13px; padding:5px 6px; outline:none; text-align:right;
+  }
+  .adic-linha-vals input:focus{ border-color:var(--molten); }
+  .adic-linha-vals input.qtd-input{ width:38px; text-align:center; }
   .adic-venda{ color:var(--teal); font-weight:600; }
   .adic-label{ font-size:12px; color:var(--text-muted); }
   .cat-item{
@@ -326,7 +352,8 @@
     border:1px solid var(--row-divider); margin-bottom:5px;
     background:var(--panel); transition:border-color .15s;
   }
-  .cat-item:hover{ border-color:var(--teal); }
+  .cat-item:not(.cat-item-edit):hover{ border-color:var(--teal); }
+  .cat-item-edit{ border-color:var(--molten) !important; }
   .cat-item-nome{ flex:1; font-size:14px; font-weight:500; }
   .cat-item-preco{ font-size:12px; color:var(--text-muted); white-space:nowrap; }
   .cat-item-btn{ font-size:12px; padding:3px 9px; border-radius:6px;
@@ -1241,12 +1268,16 @@ function numItemAdic(){
   return Math.min(20, Math.max(1, Math.floor(parseFloat(document.getElementById('itemAdicN').value))||1));
 }
 function garantirItemAdic(itens, n){
-  while(itens.length < n) itens.push({n:'',c:'',v:''});
+  while(itens.length < n) itens.push({n:'',q:'1',c:'',v:''});
   return itens;
 }
 function somarItemAdic(itens, n){
   let custo=0, venda=0;
-  for(let i=0;i<n;i++){ custo+=parseFloat(itens[i].c)||0; venda+=parseFloat(itens[i].v)||0; }
+  for(let i=0;i<n;i++){
+    const q = Math.max(1, parseFloat(itens[i].q)||1);
+    custo += (parseFloat(itens[i].c)||0) * q;
+    venda += (parseFloat(itens[i].v)||0) * q;
+  }
   return { custo:Math.round(custo*100)/100, venda:Math.round(venda*100)/100 };
 }
 
@@ -1254,16 +1285,18 @@ function renderItemAdic(itens, n){
   let html='';
   for(let i=0;i<n;i++){
     const it=itens[i];
-    html+=`<div class="row">
-  <div class="rlabel cresce"><input type="text" class="parte-nome" id="iadicNome${i}" maxlength="30"
-    placeholder="Item ${i+1}" value="${escHtml(it.n)}" oninput="mudouItemAdic()"></div>
-  <div class="valuewrap" style="gap:1px;flex-wrap:nowrap;">
-    <span class="unit adic-label">custo</span><span class="unit">R$</span>
-    <input type="number" id="iadicCusto${i}" value="${escHtml(it.c)}" min="0" step="0.01" inputmode="decimal"
-      style="width:50px;" oninput="mudouItemAdic()">
-    <span class="unit adic-label" style="margin-left:3px;">venda</span><span class="unit">R$</span>
-    <input type="number" id="iadicVenda${i}" value="${escHtml(it.v)}" min="0" step="0.01" inputmode="decimal"
-      style="width:50px;" class="adic-venda" oninput="mudouItemAdic()">
+    html+=`<div class="adic-bloco">
+  <div class="adic-linha-nome">
+    <input type="text" id="iadicNome${i}" maxlength="40"
+      placeholder="Nome do item ${i+1}" value="${escHtml(it.n)}" oninput="mudouItemAdic()">
+  </div>
+  <div class="adic-linha-vals">
+    <span class="unit adic-label">qtd</span>
+    <input type="number" class="qtd-input" id="iadicQtd${i}" value="${escHtml(it.q||'1')}" min="1" step="1" inputmode="numeric" oninput="mudouItemAdic()">
+    <span class="unit adic-label" style="margin-left:4px;">custo</span><span class="unit">R$</span>
+    <input type="number" id="iadicCusto${i}" value="${escHtml(it.c)}" min="0" step="0.01" inputmode="decimal" oninput="mudouItemAdic()">
+    <span class="unit adic-label" style="margin-left:4px;">venda</span><span class="unit">R$</span>
+    <input type="number" id="iadicVenda${i}" value="${escHtml(it.v)}" min="0" step="0.01" inputmode="decimal" class="adic-venda" oninput="mudouItemAdic()">
   </div>
 </div>`;
   }
@@ -1305,7 +1338,7 @@ function mudouItemAdic(){
   const itens = garantirItemAdic(lerItemAdic(), n);
   const val = id => { const el=document.getElementById(id); return el?el.value:''; };
   for(let i=0;i<n;i++){
-    itens[i]={n:val('iadicNome'+i), c:val('iadicCusto'+i), v:val('iadicVenda'+i)};
+    itens[i]={n:val('iadicNome'+i), q:val('iadicQtd'+i)||'1', c:val('iadicCusto'+i), v:val('iadicVenda'+i)};
   }
   gravarItemAdic(itens);
   calcular();
@@ -1345,25 +1378,58 @@ function usarItemCatalogo(idx){
     garantirItemAdic(itens, novoN);
     alvo = novoN-1;
   }
-  itens[alvo]={n:m.n, c:m.c, v:m.v};
+  itens[alvo]={n:m.n, q:itens[alvo]?.q||'1', c:m.c, v:m.v};
   gravarItemAdic(itens);
   renderItemAdic(itens, numItemAdic());
   calcular();
 }
 
-function renderModalCatalogo(){
+function renderModalCatalogo(editIdx){
   const cat = loadCatalogo();
   const el = document.getElementById('modalCatalogoLista');
   if(!cat.length){
     el.innerHTML='<div class="cat-vazio">Nenhum material cadastrado ainda.</div>';
     return;
   }
-  el.innerHTML = cat.map((m,i)=>
-    `<div class="cat-item" style="cursor:default;">
+  el.innerHTML = cat.map((m,i)=>{
+    if(i === editIdx){
+      return `<div class="cat-item cat-item-edit" style="cursor:default;flex-direction:column;align-items:stretch;gap:6px;">
+        <input id="catEditNome${i}" type="text" class="modal-input-full" value="${escHtml(m.n)}" maxlength="40" placeholder="Nome">
+        <div style="display:flex;gap:6px;">
+          <div class="modal-field" style="flex:1;">
+            <span class="modal-prefix">R$</span>
+            <input id="catEditCusto${i}" type="number" class="modal-input" value="${escHtml(m.c)}" min="0" step="0.01" inputmode="decimal" placeholder="Custo">
+          </div>
+          <div class="modal-field" style="flex:1;">
+            <span class="modal-prefix">R$</span>
+            <input id="catEditVenda${i}" type="number" class="modal-input" value="${escHtml(m.v)}" min="0" step="0.01" inputmode="decimal" placeholder="Venda">
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:2px;">
+          <button class="btn-sm primario" style="flex:1;" onclick="confirmarEditCatalogo(${i})">Salvar</button>
+          <button class="btn-sm" onclick="renderModalCatalogo()">Cancelar</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="cat-item" style="cursor:default;">
       <span class="cat-item-nome">${escHtml(m.n)}</span>
       <span class="cat-item-preco">custo R$ ${fmt(parseFloat(m.c)||0)} · venda R$ ${fmt(parseFloat(m.v)||0)}</span>
-      <button class="btn-sm perigo" onclick="removerDoCatalogo(${i})">Remover</button>
-    </div>`).join('');
+      <div style="display:flex;gap:5px;">
+        <button class="btn-sm" onclick="renderModalCatalogo(${i})">Alterar</button>
+        <button class="btn-sm perigo" onclick="removerDoCatalogo(${i})">Remover</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function confirmarEditCatalogo(i){
+  const nome = document.getElementById('catEditNome'+i).value.trim();
+  if(!nome){ document.getElementById('catEditNome'+i).focus(); return; }
+  const cat = loadCatalogo();
+  cat[i] = {n:nome, c:document.getElementById('catEditCusto'+i).value, v:document.getElementById('catEditVenda'+i).value};
+  saveCatalogo(cat);
+  renderModalCatalogo();
+  renderCatalogoInline();
 }
 
 function toggleCatDropdown(){
@@ -1404,6 +1470,7 @@ function removerDoCatalogo(idx){
   cat.splice(idx,1);
   saveCatalogo(cat);
   renderModalCatalogo();
+  renderCatalogoInline();
 }
 
 // ---- Histórico de peças ----
